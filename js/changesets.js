@@ -1,13 +1,19 @@
 function getChangesetsList(start, limit) {
-    var url = GLOBAL['apibase'] + '/changesets?start=' + start + '&limit=' + limit + '&callback=?';
-    GLOBAL['jqxhr'] = $.getJSON(url, function(data) {
-        GLOBAL['changesetscount'] = data.count;
-        GLOBAL['changesetslist'] = data.changesets.reverse();
-        $.each(GLOBAL['changesetslist'], function() {
-            this.node = this.node.toUpperCase();
-            this.message = this.message.replace(/\n/g, '<br/>');
-        });
-        showChangesetsList();
+    GLOBAL['jsonp'] = $.jsonp({
+        url: GLOBAL['apibase'] + '/changesets',
+        data: {
+            'start': start,
+            'limit': limit
+        },
+        success: function(data) {
+            GLOBAL['changesetscount'] = data.count;
+            GLOBAL['changesetslist'] = data.changesets.reverse();
+            $.each(GLOBAL['changesetslist'], function() {
+                this.node = this.node.toUpperCase();
+                this.message = this.message.replace(/\n/g, '<br/>');
+            });
+            showChangesetsList();
+        }
     });
 }
 
@@ -114,10 +120,9 @@ function showChangeset(node) {
         if (next.length == 0) {
             var file = this.previousSibling.data;
             getSource(changeset.node, file, function(source) {
-                source = source.data;
                 parent.append($('<pre>')
                     .attr({ class: 'prettyprint linenums' })
-                    .append($('<code>').text(source))
+                    .append($('<code>').text(source.data))
                     );
                 prettyPrint();
             });

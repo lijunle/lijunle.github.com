@@ -3,5 +3,6 @@
     "api": "https://api.bitbucket.org/1.0/repositories/",
     "username": "lijunle",
     "repository": "acm",
-    "pagelimits": 15
+    "pagelimits": 15,
+    "contactme": "http://weibo.com/lijunle"
 }

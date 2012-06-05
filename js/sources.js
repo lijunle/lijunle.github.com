@@ -1,19 +1,23 @@
 function getSourcesList(changeset, path) {
-    var url = GLOBAL['apibase'] + '/src/' + changeset + '/' + path + '/?callback=?';
-    GLOBAL['jqxhr'] = $.getJSON(url, function(data) {
-        data.directories.sort();
-        data.files.sort(function(a, b) {
-            return a.path < b.path ? -1 : +1;
-        });
-        GLOBAL['sourceslist'] = data;
-        showSourcesList();
+    GLOBAL['jsonp'] = $.jsonp({
+        url: GLOBAL['apibase'] + '/src/' + changeset + '/' + path,
+        success: function(data) {
+            data.directories.sort();
+            data.files.sort(function(a, b) {
+                return a.path < b.path ? -1 : +1;
+            });
+            GLOBAL['sourceslist'] = data;
+            showSourcesList();
+        }
     });
 }
 
 function getSource(changeset, file, callback) {
-    var url = GLOBAL['apibase'] + '/src/' + changeset + '/' + file + '?callback=?';
-    GLOBAL['jqxhr'] = $.getJSON(url, function(data) {
-        callback(data);
+    GLOBAL['jsonp'] = $.jsonp({
+        url: GLOBAL['apibase'] + '/src/' + changeset + '/' + file,
+        success: function(data) {
+            callback(data);
+        }
     });
 }
 
