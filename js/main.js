@@ -11,8 +11,23 @@ function configure() {
             GLOBAL['blogname'] = data['blog'];
             GLOBAL['pagelimits'] = data['pagelimits'];
             GLOBAL['contactme'] = data['contactme'];
+            GLOBAL['footer'] = data['footer'];
         }
     });
+
+    // if footer is undefined, set it to default
+    if (GLOBAL['footer'] === undefined) {
+        GLOBAL['footer'] = $('<span>').append('power by ')
+            .append($('<a>')
+                    .attr({ href: 'https://bitbucket.org/lijunle/lijunle.bitbucket.org', target: '_blank' })
+                    .text('CodeBlog')
+                   )
+            .append(' and ')
+            .append($('<a>')
+                    .attr({ href: 'http://weibo.com/lijunle', target: '_blank' })
+                    .text('LiJunLe')
+                   );
+    }
 }
 
 function hint() {
@@ -23,9 +38,9 @@ function hint() {
         .append($('<span>').attr({ id: 'loadingpoint' }))
         .append($('<br>'))
         .append($('<a>')
-            .attr({ id: 'stop', href: 'javascript:void(0);' })
-            .text('stop it!')
-            );
+                .attr({ id: 'stop', href: 'javascript:void(0);' })
+                .text('stop it!')
+               );
 
     // dynamically roll the loading points
     var timeout = 100;
@@ -56,18 +71,16 @@ function hint() {
         .append($('<a>')
                 .attr({ href: GLOBAL['contactme'], target: '_blank' })
                 .text('me')
-                )
+               )
         .append(' or try again later.<br/>');
 
     // setup ajax hints
     $.jsonp.setup({
         callbackParameter: 'callback',
-        timeout: 3000,
+        timeout: 7000,
+        cache: true,
         beforeSend: function() {
             $('#hint').html(load);
-        },
-        error: function(xOption, status) {
-            console.log(status);
         },
         complete: function(xOption, status) {
             if (status == 'success') {
@@ -85,35 +98,29 @@ $(function() {
     configure();
     hint();
 
+    // set blog name for title and header
     $('title').html(GLOBAL['blogname']);
-
     $('#header').append($('<h1>').text(GLOBAL['blogname']));
 
-    $('#menu')
-    .append($('<a>')
-        .attr({
-            href: 'javascript:void(0);',
-            id: 'changesets'
-        })
-        .text('Changesets')
-        )
-    .append($('<span>').text(' '))
-    .append($('<a>')
-        .attr({
-            href: 'javascript:void(0);',
-            id: 'sources'
-        })
-        .text('Sources')
-        );
+    // append information to menu bar
+    var changesets = $('<a>').attr({ href: 'javascript:void(0);', id: 'changesets' }).text('Changesets');
+    var sources = $('<a>').attr({ href: 'javascript:void(0);', id: 'sources' }).text('Sources');
+    $('#menu').append(changesets).append(sources);
 
+    // append footer to footer div
+    $('#footer').html(GLOBAL['footer']);
 
-$('#changesets').click(function() {
+    // bind click action for menu
+    $('#changesets').click(function() {
+        getChangesetsList('tip', GLOBAL['pagelimits']);
+    });
+    $('#sources').click(function() {
+        getSourcesList('tip', '');
+    });
+
+    // set home page for show changesets list
+    // if you want to set show sources list by default
+    // uncomment the next line
     getChangesetsList('tip', GLOBAL['pagelimits']);
-});
-$('#sources').click(function() {
-    getSourcesList('tip', '');
-});
-
-//getSourcesList('tip', '');
-getChangesetsList('tip', GLOBAL['pagelimits']);
+    //getSourcesList('tip', '');
 });

@@ -23,10 +23,10 @@ function getSource(changeset, file, callback) {
 
 function showSourcesList() {
     // clear the content DOM
-    $('#content').empty();
+    $('#content').empty().attr({ class: 'sources' });
 
-    // path nevigation bar
-    var div = $('<div>');
+    // append path nevigation bar
+    var div = $('<div>').attr({ class: 'path' });
     $('#content').append(div);
     var path = new Array('root').concat(GLOBAL['sourceslist'].path.split('/'));
     $(path).each(function() {
@@ -58,6 +58,8 @@ function showSourcesList() {
                     .text(this)
                     )
                 )
+            .append($('<td>'))
+            .append($('<td>'))
             );
     });
 

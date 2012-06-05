@@ -19,25 +19,29 @@ function getChangesetsList(start, limit) {
 
 function showChangesetsList() {
     // show changeset list to content
-    $('#content').empty();
+    $('#content').empty().attr({ class: 'changesetslist' });
     $.each(GLOBAL['changesetslist'], function() {
         var index = GLOBAL['changesetscount'] - this.revision;
         $('#content').append($('<div>')
+            .attr({ class: 'changeset' })
             .append($('<p>')
-                .append('(')
-                .append(index)
-                .append(') ')
+                .attr({ class: 'title' })
+                .append($('<span>')
+                    .attr({ class: 'index' })
+                    .text(index))
                 .append($('<a>')
                     .attr({ class: 'node', href: 'javascript:void(0);' })
                     .text(this.node)
                 )
             )
-            .append($('<p>').html(this.message))
+            .append($('<p>')
+                .attr({ class: 'paragraph' })
+                .html(this.message))
         );
     });
 
-    // append page navigation bar
-    var page = $('<div>');
+    // append pagination bar
+    var page = $('<div>').attr({ class: 'pagination' });
     $('#content').append(page);
     var count = Math.ceil(GLOBAL['changesetscount'] / GLOBAL['pagelimits']);
     var curpage = Math.ceil((GLOBAL['changesetscount'] - GLOBAL['changesetslist'][0].revision) / GLOBAL['pagelimits']);
@@ -45,7 +49,7 @@ function showChangesetsList() {
         var span = $('<span>');
         page.append(span);
         if (i == curpage) {
-            span.text(i);
+            span.attr({ class: 'current' }).text(i);
         } else {
             span.append($('<a>')
                     .attr({ href: 'javascript:void(0);', class: 'page' })
@@ -76,24 +80,29 @@ function showChangeset(node) {
     });
 
     // show the specified changeset information to content
-    $('#content')
-        .empty()
-        .append($('<a>')
-                .attr({ id: 'back', href: 'javascript:void(0);'})
-                .text('Back to list')
-               )
-        .append($('<h2>').text(changeset.node))
-        .append($('<h4>').text(changeset.timestamp))
-        .append($('<p>').html(changeset.message))
-        .append($('<div>')
-                .append($('<span>')
-                    .attr({ class: 'list-head' })
-                    .text('Changed Files:')
-                    )
-               );
+    $('#content').empty().attr({ class: 'changeset' });
+    // append back to list anchor
+    $('#content').append($('<a>')
+            .attr({ id: 'back', href: 'javascript:void(0);'})
+            .text('Back to list'));
+    $('#content').append($('<h2>')
+            .attr({ class: 'title' })
+            .text(changeset.node));
+    $('#content').append($('<h4>')
+            .attr({ class: 'subtitle' })
+            .text(changeset.timestamp));
+    $('#content').append($('<p>')
+            .attr({ class: 'paragraph' })
+            .html(changeset.message));
+
+    var fileslist = $('<div>').append($('<span>')
+            .attr({ class: 'list-head' })
+            .text('Changed Files:'));
+    $('#content').append(fileslist);
 
     // append files list
     var list = $('<ul>');
+    $(fileslist).append(list);
     $(changeset.files).each(function(index) {
         var file = $('<li>').append(this.file);
         if (this.type == 'removed') {
@@ -106,7 +115,6 @@ function showChangeset(node) {
         }
         list.append(file);
     });
-    $('#content').append(list);
 
     // bind back anchor back to changesets list
     $('#back').bind('click', function() {

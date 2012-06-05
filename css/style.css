@@ -1,0 +1,193 @@
+body {
+    width: 960px;
+    margin: 0 auto;
+}
+
+p {
+    margin: 0;
+}
+
+a:hover {
+    color: orange;
+}
+
+#header > h1 {
+    font-size: 2.4em;
+    font-family: sans-serif, monospace;
+    text-align: center;
+    padding: 0.2em;
+    margin: 0.1em auto 0;
+}
+
+#menu {
+    border-style: dotted;
+    border-width: thin;
+    border-radius: 0.4em;
+}
+
+#menu > a {
+    text-align: center;
+    font-size: 1.1em;
+    display: inline-block;
+    width: 50%;
+    margin: 0.8em auto;
+}
+
+#menu > a:hover {
+}
+
+#hint > span {
+    position: absolute;
+    z-index: 10;
+    top: 40%; /*top left width should set dynamically*/
+    left: 45%;
+    width: 10%;
+    padding: 0.5em;
+    border: solid thin;
+    border-radius: 0.5em;
+    background: white;
+}
+
+#footer {
+    margin: 3em 0em 1.3em;
+    font-size: 0.8em;
+    text-align: right;
+}
+
+.changesetslist > .changeset {
+    margin: 1.3em 1em;
+}
+
+.changesetslist > .changeset > p {
+    margin: 0.3em auto;
+}
+
+.changesetslist > .changeset .index {
+    font-size: 0.8em;
+    font-family: monospace, sans-serif;
+    vertical-align: text-bottom;
+}
+
+.changesetslist > .changeset .index:after {
+    content: '\' '
+}
+
+.changesetslist > .changeset .node {
+    font-size: 1.3em;
+    font-family: serif;
+    letter-spacing: 0.04em;
+}
+
+.changesetslist > .changeset .paragraph {
+    padding-left: 1em;
+    border-left: 0.2em solid #CACACA;
+}
+
+.pagination {
+    margin: 2em 0em 1.5em 1.3em;
+}
+
+.pagination .current {
+    border: 1px dashed #8D8D8D;
+    font-weight: bold;
+}
+
+.pagination > span {
+    margin: 0 0.4em;
+    border: 1px solid #8D8D8D;
+    padding: 0.25em
+}
+
+.pagination > span:not(.current):hover {
+    color: green;
+    background: #F0F0F0;
+}
+
+.changeset > #back {
+    display: block;
+    margin: 1.3em;
+}
+
+.changeset > #back:before {
+    content: '<< ';
+}
+
+.changeset > h2.title {
+    letter-spacing: 0.1em;
+    text-align: center;
+    margin-bottom: 0.3em;
+}
+
+.changeset > h4.subtitle {
+    text-align: center;
+    font-size: 0.8em;
+    font-weight: normal;
+    margin-top: 0.3em;
+}
+
+.changeset > .paragraph {
+    padding-left: 2em;
+    margin: 2em 0em 1.5em;
+}
+
+.changeset .list-head {
+    padding-left: 3em;
+}
+
+.changeset ul {
+    margin: 0.8em auto 2em 0.7em;
+}
+
+.changeset ul li {
+    margin: 0.3em auto auto auto;
+}
+
+.sources > .path {
+    display: block;
+    margin: 1.2em auto 1.2em 1em;
+    font-family: monospace, sans-serif;
+    font-size: 1.1em;
+}
+
+.sources > table {
+    width: 100%;
+}
+
+.sources > table tr th {
+    border-top: medium solid black;
+    border-bottom: medium solid black;
+}
+
+.sources > table tr td {
+    font-family: monospace, sans-serif;
+    border-bottom: 0.15em solid #ECECEC;
+}
+
+.sources > table tr:nth-child(even) {
+    background: #F9F9F9;
+}
+
+.sources > table tr:last-child td {
+    border-bottom: medium solid black;
+}
+
+.sources #code {
+    z-index: 5;
+    position: absolute;
+    background: white;
+    top: 100px;
+    left: 10%;
+    width: 80%;
+}
+
+.sources #code > h2 {
+    padding: 0.3em;
+    margin: 0em 0em 0.1em;
+    text-align: center;
+    font-family: monospace, sans-serif;
+    border: 1px solid #888;
+}
+
+.sources #code pre {
+    margin: 0em;
+}
