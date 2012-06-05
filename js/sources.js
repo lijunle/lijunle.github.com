@@ -1,7 +1,10 @@
 function getSourcesList(changeset, path) {
-    // make a home page
     var url = GLOBAL['apibase'] + '/src/' + changeset + '/' + path + '/?callback=?';
     GLOBAL['jqxhr'] = $.getJSON(url, function(data) {
+        data.directories.sort();
+        data.files.sort(function(a, b) {
+            return a.path < b.path ? -1 : +1;
+        });
         GLOBAL['sourceslist'] = data;
         showSourcesList();
     });
@@ -83,19 +86,24 @@ function showSourcesList() {
         getSourcesList(GLOBAL['sourceslist'].node, url);
     });
 
-    // bind show file to file list
+    // bind show file source code when click filename
     $('.show-file').bind('click', function() {
         var file = GLOBAL['sourceslist'].path + this.text;
-        getSource(GLOBAL['sourceslist'].node, file, function(source) {
-            source = source.data;
-            $('#code').html($('<pre>')
-                .attr({ class: 'prettyprint linenums' })
-                .append($('<code>')
-                    .attr({ class: 'language-cpp' })
-                    .text(source)
-                    )
-                );
-            prettyPrint();
-        });
+        if ($('#code h2').text() == file) {
+            $('#code').empty();
+        } else {
+            getSource(GLOBAL['sourceslist'].node, file, function(source) {
+                source = source.data;
+                $('#code').empty();
+                $('#code').append($('<h2>').text(file)).append($('<pre>')
+                    .attr({ class: 'prettyprint linenums' })
+                    .append($('<code>')
+                        .attr({ class: 'language-cpp' })
+                        .text(source)
+                        )
+                    );
+                prettyPrint();
+            });
+        }
     });
 }

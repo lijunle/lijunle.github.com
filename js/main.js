@@ -67,6 +67,7 @@ $(function() {
     configure();
 
     $('title').html(GLOBAL['blogname']);
+
     $('#header').append($('<h1>').text(GLOBAL['blogname']));
 
     $('#menu')
