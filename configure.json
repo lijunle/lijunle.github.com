@@ -2,5 +2,6 @@
     "blog": "LiJunLe ACM Code",
     "api": "https://api.bitbucket.org/1.0/repositories/",
     "username": "lijunle",
-    "repository": "acm"
+    "repository": "acm",
+    "pagelimits": 15
 }

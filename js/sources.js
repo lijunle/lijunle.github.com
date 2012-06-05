@@ -1,15 +1,15 @@
 function getSourcesList(changeset, path) {
     // make a home page
-    var url = base + '/src/' + changeset + '/' + path + '/?callback=?';
-    xhr = $.getJSON(url, function(data) {
-        sourceslist = data;
+    var url = GLOBAL['apibase'] + '/src/' + changeset + '/' + path + '/?callback=?';
+    GLOBAL['jqxhr'] = $.getJSON(url, function(data) {
+        GLOBAL['sourceslist'] = data;
         showSourcesList();
     });
 }
 
 function getSource(changeset, file, callback) {
-    var url = base + '/src/' + changeset + '/' + file + '?callback=?';
-    xhr = $.getJSON(url, function(data) {
+    var url = GLOBAL['apibase'] + '/src/' + changeset + '/' + file + '?callback=?';
+    GLOBAL['jqxhr'] = $.getJSON(url, function(data) {
         callback(data);
     });
 }
@@ -21,7 +21,7 @@ function showSourcesList() {
     // path nevigation bar
     var div = $('<div>');
     $('#content').append(div);
-    var path = new Array('root').concat(sourceslist.path.split('/'));
+    var path = new Array('root').concat(GLOBAL['sourceslist'].path.split('/'));
     $(path).each(function() {
         if (this != '') {
             div.append('/').append($('<a>')
@@ -31,17 +31,18 @@ function showSourcesList() {
         }
     });
 
+    // append table header
     var table = $('<table>');
     $('#content').append(table);
     $('#content').append($('<div>').attr({ id: 'code' }));
-    // append table header
-    table.append($('<th>')
-            .append($('<td>').text('filename'))
-            .append($('<td>').text('size'))
-            .append($('<td>').text('Last Modified'))
+    table.append($('<tr>')
+            .append($('<th>').text('filename'))
+            .append($('<th>').text('size'))
+            .append($('<th>').text('Last Modified'))
             );
+
     // append folders infomation to table
-    $(sourceslist.directories).each(function() {
+    $(GLOBAL['sourceslist'].directories).each(function() {
         table.append($('<tr>')
             .append($('<td>')
                 .attr({ class: 'folder' })
@@ -52,8 +53,9 @@ function showSourcesList() {
                 )
             );
     });
+
     // append files infomation to table
-    $(sourceslist.files).each(function() {
+    $(GLOBAL['sourceslist'].files).each(function() {
         var filename = this.path.split('/');
         table.append($('<tr>')
             .append($('<td>').append($('<a>')
@@ -65,11 +67,11 @@ function showSourcesList() {
             );
     });
 
-    // bind the anchor link to DOM with '.source'
+    // bind click action to path navigation bar
     $('.source').bind('click', function() {
         var url = '';
         if ($(this).parent().is('td')) {
-            url = sourceslist.path + this.text;
+            url = GLOBAL['sourceslist'].path + this.text;
         } else if (this.text != 'root') { // when click root, path is empty!
             $.each($(this).prevAll('a'), function() {
                 if (this.text != 'root') {
@@ -78,13 +80,13 @@ function showSourcesList() {
             });
             url = url + '/' + this.text;
         }
-        getSourcesList(sourceslist.node, url);
+        getSourcesList(GLOBAL['sourceslist'].node, url);
     });
 
     // bind show file to file list
     $('.show-file').bind('click', function() {
-        var file = sourceslist.path + this.text;
-        getSource(sourceslist.node, file, function(source) {
+        var file = GLOBAL['sourceslist'].path + this.text;
+        getSource(GLOBAL['sourceslist'].node, file, function(source) {
             source = source.data;
             $('#code').html($('<pre>')
                 .attr({ class: 'prettyprint linenums' })

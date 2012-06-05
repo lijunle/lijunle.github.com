@@ -1,22 +1,25 @@
 function getChangesetsList(start, limit) {
-    var url = base + '/changesets?start=' + start + '&limit=' + limit + '&callback=?';
-    xhr = $.getJSON(url, function(data) {
-        changesetslist = data.changesets.reverse();
-        $.each(changesetslist, function() {
+    var url = GLOBAL['apibase'] + '/changesets?start=' + start + '&limit=' + limit + '&callback=?';
+    GLOBAL['jqxhr'] = $.getJSON(url, function(data) {
+        GLOBAL['changesetscount'] = data.count;
+        GLOBAL['changesetslist'] = data.changesets.reverse();
+        $.each(GLOBAL['changesetslist'], function() {
             this.node = this.node.toUpperCase();
             this.message = this.message.replace(/\n/g, '<br/>');
-            showChangesetsList();
         });
+        showChangesetsList();
     });
 }
 
 function showChangesetsList() {
+    // show changeset list to content
     $('#content').empty();
-    $.each(changesetslist, function(index) {
+    $.each(GLOBAL['changesetslist'], function() {
+        var index = GLOBAL['changesetscount'] - this.revision;
         $('#content').append($('<div>')
             .append($('<p>')
                 .append('(')
-                .append(index + 1)
+                .append(index)
                 .append(') ')
                 .append($('<a>')
                     .attr({ class: 'node', href: 'javascript:void(0);' })
@@ -27,21 +30,46 @@ function showChangesetsList() {
         );
     });
 
-    // bind a link for node class
+    // append page navigation bar
+    var page = $('<div>');
+    $('#content').append(page);
+    var count = Math.ceil(GLOBAL['changesetscount'] / GLOBAL['pagelimits']);
+    var curpage = Math.ceil((GLOBAL['changesetscount'] - GLOBAL['changesetslist'][0].revision) / GLOBAL['pagelimits']);
+    for (var i = 1; i <= count; i++) {
+        var span = $('<span>');
+        page.append(span);
+        if (i == curpage) {
+            span.text(i);
+        } else {
+            span.append($('<a>')
+                    .attr({ href: 'javascript:void(0);', class: 'page' })
+                    .text(i)
+                    )
+        }
+    }
+
+    // bind a link for node anchor
     $('.node').bind('click', function() {
         showChangeset(this.text);
+    });
+
+    // bind click action to page navigation bar
+    $('.page').bind('click', function() {
+        var start = GLOBAL['changesetscount'] - (this.text - 1) * GLOBAL['pagelimits'] - 1;
+        getChangesetsList(start, GLOBAL['pagelimits']);
     });
 }
 
 function showChangeset(node) {
     // select the right DOM, equals to node
     var changeset = null;
-    $(changesetslist).each(function() {
+    $(GLOBAL['changesetslist']).each(function() {
         if (this.node == node) {
             changeset = this;
         }
     });
 
+    // show the specified changeset information to content
     $('#content')
         .empty()
         .append($('<a>')
@@ -54,19 +82,23 @@ function showChangeset(node) {
         .append($('<div>')
                 .append($('<span>')
                     .attr({ class: 'list-head' })
-                    .text('Modified Files:')
+                    .text('Changed Files:')
                     )
                );
 
+    // append files list
     var list = $('<ul>');
     $(changeset.files).each(function(index) {
-        list.append($('<li>')
-            .append(this.file)
-            .append($('<a>')
+        var file = $('<li>').append(this.file);
+        if (this.type == 'removed') {
+            file.append($('<span>').text('(removed)'))
+        } else {
+            file.append($('<a>')
                 .attr({ href: 'javascript:void(0);', class: 'show-file' })
                 .text('#')
-                )
-            );
+                );
+        }
+        list.append(file);
     });
     $('#content').append(list);
 
@@ -84,11 +116,8 @@ function showChangeset(node) {
             getSource(changeset.node, file, function(source) {
                 source = source.data;
                 parent.append($('<pre>')
-                    .attr({ class: 'prettyprint' })
-                    .append($('<code>')
-                        .attr({ class: 'language-cpp' })
-                        .text(source)
-                        )
+                    .attr({ class: 'prettyprint linenums' })
+                    .append($('<code>').text(source))
                     );
                 prettyPrint();
             });
