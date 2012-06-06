@@ -1,6 +1,7 @@
 var GLOBAL = new Array();
 
 $(function() {
+    analytics();
     configure();
     hint();
 
