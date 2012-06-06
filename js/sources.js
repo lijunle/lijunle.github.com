@@ -79,7 +79,7 @@ function showSourcesList() {
     });
 
     // bind click action to path navigation bar
-    $('.source').live('click', function() {
+    $('.source').bind('click', function() {
         var url = '';
         if ($(this).parent().is('td')) {
             url = GLOBAL['sourceslist'].path + this.text;
@@ -95,16 +95,9 @@ function showSourcesList() {
     });
 
     // bind show file source code when click filename
-    $('.show-file').live('click', function() {
+    $('.show-file').bind('click', function() {
         var file = GLOBAL['sourceslist'].path + this.text;
         showSource(file);
-    });
-
-    // bind click action to overlay
-    $('#overlay').live('click', function() {
-        $('#code').empty();
-        $('#overlay').remove();
-        history.pushState(getState(), $('title').text(), '?source=' + GLOBAL['sourceslist'].path);
     });
 }
 
@@ -120,6 +113,15 @@ function showSource(file) {
                 .text(source.data)
                 )
             );
+
+        // pretty the code with google code prettify
         prettyPrint();
+
+        // bind click action to overlay
+        $('#overlay').bind('click', function() {
+            $('#code').empty();
+            $('#overlay').remove();
+            history.pushState(getState(), $('title').text(), '?source=' + GLOBAL['sourceslist'].path);
+        });
     });
 }

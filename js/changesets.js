@@ -60,14 +60,14 @@ function showChangesetsList() {
     }
 
     // bind a link for node anchor
-    $('.node').live('click', function() {
+    $('.node').bind('click', function() {
         showChangeset(this.text);
         var anchor = '?changeset=' + this.text;
         history.pushState(getState(), $('title').text(), anchor);
     });
 
     // bind click action to page navigation bar
-    $('.page').live('click', function() {
+    $('.page').bind('click', function() {
         var start = GLOBAL['changesetscount'] - (this.text - 1) * GLOBAL['pagelimits'] - 1;
         getChangesetsList(start, GLOBAL['pagelimits']);
     });
@@ -124,14 +124,14 @@ function showChangeset(node) {
     });
 
     // bind back anchor back to changesets list
-    $('#back').live('click', function() {
+    $('#back').bind('click', function() {
         showChangesetsList();
         var anchor = '?changeset=' + 'tip';
         history.pushState(getState(), $('title').text(), anchor);
     });
 
     // bind show file to file list
-    $('.show-file').live('click', function() {
+    $('.show-file').bind('click', function() {
         var parent = $(this).parents('.changeset ul li');
         var pre = parent.find('pre');
         if (pre.length == 0) {
