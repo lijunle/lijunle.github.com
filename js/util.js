@@ -99,7 +99,11 @@ function hint() {
         complete: function(x, status) {
             if (status == 'success') {
                 $('#hint').hide();
-                history.pushState(getState(), $('title').text(), x.anchor);
+                if (GLOBAL['_hack_anchor'] === false) { // TODO hack not to make a new url
+                    delete GLOBAL['_hack_anchor'];
+                } else {
+                    history.pushState(getState(), $('title').text(), x.anchor);
+                }
             } else {
                 var error = $('<span>').text('Request ' + status).append(contact);
                 $('#hint').html(error).delay(10000).fadeOut(800);

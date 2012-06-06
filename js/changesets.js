@@ -136,6 +136,7 @@ function showChangeset(node) {
         var pre = parent.find('pre');
         if (pre.length == 0) {
             var file = parent.find('.filename').text();
+            GLOBAL['_hack_anchor'] = false; // TODO hack not to make a new url
             getSource(changeset.node, file, function(source) {
                 parent.append($('<pre>')
                     .attr({ class: 'prettyprint linenums' })
