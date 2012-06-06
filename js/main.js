@@ -1,88 +1,5 @@
 var GLOBAL = new Array();
 
-function configure() {
-    // load blog configure
-    $.ajax({
-        url: 'configure.json',
-        datatype: 'json',
-        async: false,
-        success: function(data) {
-            GLOBAL['apibase'] = data['api'] + data['username'] + '/' + data['repository'];
-            GLOBAL['blogname'] = data['blog'];
-            GLOBAL['timeout'] = data['timeout'];
-            GLOBAL['pagelimits'] = data['pagelimits'];
-            GLOBAL['contactme'] = data['contactme'];
-            GLOBAL['footer'] = data['footer'];
-        }
-    });
-}
-
-function hint() {
-    // create loading DOM node
-    var load = $('<span>')
-        .attr({ id: 'loading' })
-        .text('loading')
-        .append($('<span>').attr({ id: 'loadingpoint' }))
-        .append($('<a>')
-                .attr({ id: 'stop', href: 'javascript:void(0);' })
-                .text('stop')
-               );
-
-    // dynamically roll the loading points
-    var timeout = 100;
-    setTimeout(function loadingpoint() {
-        $('#loadingpoint').append('.');
-        if ($('#loadingpoint').text().length > 5) {
-            $('#loadingpoint').text('.');
-        }
-        setTimeout(loadingpoint, timeout);
-    }, timeout);
-
-    // create abort DOM node
-    var abort = $('<span>').text('The requeset is aborted by user.');
-
-    // bind anchor to abort jsonp request
-    $('#stop').live('click', function() {
-        if (GLOBAL['jsonp'] instanceof Object) {
-            GLOBAL['jsonp'].abort();
-            $('#hint').html(abort).delay(2000).fadeOut(800);
-        }
-    })
-
-    // create contact DOM node
-    var contact = $('<span>')
-        .append(', contact ')
-        .append($('<a>')
-                .attr({ href: GLOBAL['contactme'], target: '_blank' })
-                .text('me')
-               )
-        .append(' or try again later.');
-
-    // setup ajax hints
-    $.jsonp.setup({
-        callbackParameter: 'callback',
-        timeout: GLOBAL['timeout'],
-        cache: true,
-        beforeSend: function() {
-            $('#hint').html(load).show();
-        },
-        complete: function(xOption, status) {
-            if (status == 'success') {
-                $('#hint').hide();
-            } else {
-                var error = $('<span>').text('Request ' + status).append(contact);
-                $('#hint').html(error).delay(10000).fadeOut(800);
-            }
-        }
-    });
-
-    $('#hint').live('click', function() {
-        if ($(this).has('span#loading').length == 0) {
-            $(this).stop().fadeOut(800);
-        }
-    });
-}
-
 $(function() {
     configure();
     hint();
@@ -101,15 +18,64 @@ $(function() {
 
     // bind click action for menu
     $('#changesets').click(function() {
-        getChangesetsList('tip', GLOBAL['pagelimits']);
+        getChangesetsList('tip', GLOBAL['pagelimits'], 'list');
     });
     $('#sources').click(function() {
         getSourcesList('tip', '');
     });
 
-    // set home page for show changesets list
-    // if you want to set show sources list by default
-    // uncomment the next line
-    getChangesetsList('tip', GLOBAL['pagelimits']);
-    //getSourcesList('tip', '');
+    var changeset = get('changeset', 'c');
+    var source = get('source', 'n');
+    showPage(changeset, source);
 });
+
+function configure() {
+    // get url get key-value
+    GLOBAL['GET'] = new Array();
+    var url = window.location.search.substring(1);
+    if (url) {
+        var pairs = url.split('&');
+        for (var i = 0; i < pairs.length; i++) {
+            var pair = pairs[i].split('=');
+            GLOBAL['GET'][pair[0]] = pair[1];
+        }
+    }
+
+    // load blog configure
+    $.ajax({
+        url: 'configure.json',
+        datatype: 'json',
+        async: false,
+        success: function(data) {
+            GLOBAL['apibase'] = data['api'] + data['username'] + '/' + data['repository'];
+            GLOBAL['blogname'] = data['blog'];
+            GLOBAL['timeout'] = data['timeout'];
+            GLOBAL['pagelimits'] = data['pagelimits'];
+            GLOBAL['contactme'] = data['contactme'];
+            GLOBAL['footer'] = data['footer'];
+        }
+    });
+}
+
+function showPage(changeset, source) {
+    if (changeset != undefined && changeset.match('page') != null) { // go to specify page
+        // TODO: should go to a centern node
+        var page = changeset.substr(4);
+        getChangesetsList('tip', GLOBAL['pagelimits']);
+    } else if (changeset != undefined && changeset.length == 12) { // a hex node value
+        getChangesetsList(changeset, GLOBAL['pagelimits']);
+        GLOBAL['jsonp'].done(function() {
+            showChangeset(changeset);
+        });
+    } else if (source != undefined) { // it is a path
+        var path = getPath(source);
+        getSourcesList('tip', path[0]);
+        if (path.length > 1) {
+            GLOBAL['jsonp'].done(function() {
+                showSource(path[0] + '/' + path[1]);
+            });
+        }
+    } else {
+        getChangesetsList('tip', GLOBAL['pagelimits']);
+    }
+}

@@ -1,6 +1,7 @@
 function getSourcesList(changeset, path) {
     GLOBAL['jsonp'] = $.jsonp({
         url: GLOBAL['apibase'] + '/src/' + changeset + '/' + path,
+        anchor: '?source=' + path,
         success: function(data) {
             data.directories.sort();
             data.files.sort(function(a, b) {
@@ -15,6 +16,7 @@ function getSourcesList(changeset, path) {
 function getSource(changeset, file, callback) {
     GLOBAL['jsonp'] = $.jsonp({
         url: GLOBAL['apibase'] + '/src/' + changeset + '/' + file,
+        anchor: '?source=' + file,
         success: function(data) {
             callback(data);
         }
@@ -77,7 +79,7 @@ function showSourcesList() {
     });
 
     // bind click action to path navigation bar
-    $('.source').bind('click', function() {
+    $('.source').live('click', function() {
         var url = '';
         if ($(this).parent().is('td')) {
             url = GLOBAL['sourceslist'].path + this.text;
@@ -93,25 +95,31 @@ function showSourcesList() {
     });
 
     // bind show file source code when click filename
-    $('.show-file').bind('click', function() {
+    $('.show-file').live('click', function() {
         var file = GLOBAL['sourceslist'].path + this.text;
-        getSource(GLOBAL['sourceslist'].node, file, function(source) {
-            $('body').append($('<div id="overlay">'));
-            $('#code').empty()
-            .append($('<pre>')
-                .attr({ class: 'prettyprint linenums' })
-                .append($('<code>')
-                    .attr({ class: 'language-cpp' })
-                    .text(source.data)
-                    )
-                );
-            prettyPrint();
-        });
+        showSource(file);
     });
 
     // bind click action to overlay
     $('#overlay').live('click', function() {
         $('#code').empty();
         $('#overlay').remove();
+        history.pushState(getState(), $('title').text(), '?source=' + GLOBAL['sourceslist'].path);
+    });
+}
+
+function showSource(file) {
+    // show source with overlay
+    getSource(GLOBAL['sourceslist'].node, file, function(source) {
+        $('body').append($('<div id="overlay">'));
+        $('#code').empty()
+        .append($('<pre>')
+            .attr({ class: 'prettyprint linenums' })
+            .append($('<code>')
+                .attr({ class: 'language-cpp' })
+                .text(source.data)
+                )
+            );
+        prettyPrint();
     });
 }
