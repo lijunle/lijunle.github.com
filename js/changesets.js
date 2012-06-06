@@ -107,16 +107,17 @@ function showChangeset(node) {
     var list = $('<ul>');
     $(fileslist).append(list);
     $(changeset.files).each(function(index) {
-        var file = $('<li>').append(this.file);
+        var li = $('<li>').appendTo(list);
+        var file = $('<span>').attr({ class: 'filename' }).text(this.file).appendTo(li);
+        var status = $('<span>').attr({ class: 'status' }).appendTo(li);
         if (this.type == 'removed') {
-            file.append($('<span>').text('(removed)'))
+            status.text('removed');
         } else {
-            file.append($('<a>')
+            status.append($('<a>')
                 .attr({ href: 'javascript:void(0);', class: 'show-file' })
                 .text('#')
                 );
         }
-        list.append(file);
     });
 
     // bind back anchor back to changesets list
@@ -126,10 +127,10 @@ function showChangeset(node) {
 
     // bind show file to file list
     $('.show-file').bind('click', function() {
-        var parent = $(this).parent();
-        var next = $(this).next();
-        if (next.length == 0) {
-            var file = this.previousSibling.data;
+        var parent = $(this).parents('.changeset ul li');
+        var pre = parent.find('pre');
+        if (pre.length == 0) {
+            var file = parent.find('.filename').text();
             getSource(changeset.node, file, function(source) {
                 parent.append($('<pre>')
                     .attr({ class: 'prettyprint linenums' })
@@ -137,10 +138,10 @@ function showChangeset(node) {
                     );
                 prettyPrint();
             });
-        } else if (next.is(':visible')) {
-            next.hide();
+        } else if (pre.is(':visible')) {
+            pre.hide();
         } else {
-            next.show();
+            pre.show();
         }
     });
 

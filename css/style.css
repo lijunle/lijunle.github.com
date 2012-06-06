@@ -148,6 +148,12 @@ a:hover {
     margin: 0.2em auto auto auto;
 }
 
+.changeset ul li span.status {
+    margin-left: 0.6em;
+    font-size: 0.8em;
+    text-decoration: underline;
+}
+
 .sources > .path {
     display: block;
     margin: 1.2em auto 1.2em 1em;
