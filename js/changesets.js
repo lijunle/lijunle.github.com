@@ -81,16 +81,19 @@ function showChangeset(node) {
 
     // show the specified changeset information to content
     $('#content').empty().attr({ class: 'changeset' });
-    // append back to list anchor
+    // append back anchor
     $('#content').append($('<a>')
             .attr({ id: 'back', href: 'javascript:void(0);'})
             .text('Back to list'));
+    // append title
     $('#content').append($('<h2>')
             .attr({ class: 'title' })
             .text(changeset.node));
+    // append subtitle for showing time
     $('#content').append($('<h4>')
             .attr({ class: 'subtitle' })
             .text(changeset.timestamp));
+    // append paragraph content
     $('#content').append($('<p>')
             .attr({ class: 'paragraph' })
             .html(changeset.message));

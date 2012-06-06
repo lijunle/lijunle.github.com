@@ -9,25 +9,12 @@ function configure() {
         success: function(data) {
             GLOBAL['apibase'] = data['api'] + data['username'] + '/' + data['repository'];
             GLOBAL['blogname'] = data['blog'];
+            GLOBAL['timeout'] = data['timeout'];
             GLOBAL['pagelimits'] = data['pagelimits'];
             GLOBAL['contactme'] = data['contactme'];
             GLOBAL['footer'] = data['footer'];
         }
     });
-
-    // if footer is undefined, set it to default
-    if (GLOBAL['footer'] === undefined) {
-        GLOBAL['footer'] = $('<span>').append('power by ')
-            .append($('<a>')
-                    .attr({ href: 'https://bitbucket.org/lijunle/lijunle.bitbucket.org', target: '_blank' })
-                    .text('CodeBlog')
-                   )
-            .append(' and ')
-            .append($('<a>')
-                    .attr({ href: 'http://weibo.com/lijunle', target: '_blank' })
-                    .text('LiJunLe')
-                   );
-    }
 }
 
 function hint() {
@@ -36,19 +23,17 @@ function hint() {
         .attr({ id: 'loading' })
         .text('loading')
         .append($('<span>').attr({ id: 'loadingpoint' }))
-        .append($('<br>'))
         .append($('<a>')
                 .attr({ id: 'stop', href: 'javascript:void(0);' })
-                .text('stop it!')
+                .text('stop')
                );
 
     // dynamically roll the loading points
     var timeout = 100;
     setTimeout(function loadingpoint() {
-        var length = $('#loadingpoint').text().length % 5 + 1;
-        $('#loadingpoint').empty();
-        for (var i = 0; i < length; i++) {
-            $('#loadingpoint').append('.');
+        $('#loadingpoint').append('.');
+        if ($('#loadingpoint').text().length > 5) {
+            $('#loadingpoint').text('.');
         }
         setTimeout(loadingpoint, timeout);
     }, timeout);
@@ -60,36 +45,40 @@ function hint() {
     $('#stop').live('click', function() {
         if (GLOBAL['jsonp'] instanceof Object) {
             GLOBAL['jsonp'].abort();
-            $('#hint').html(abort);
-            $(abort).show().delay(2000).fadeOut(800);
+            $('#hint').html(abort).delay(2000).fadeOut(800);
         }
     })
 
-    // create contactme DOM node
-    var contactme = $('<span>')
-        .append('Error occur, contact ')
+    // create contact DOM node
+    var contact = $('<span>')
+        .append(', contact ')
         .append($('<a>')
                 .attr({ href: GLOBAL['contactme'], target: '_blank' })
                 .text('me')
                )
-        .append(' or try again later.<br/>');
+        .append(' or try again later.');
 
     // setup ajax hints
     $.jsonp.setup({
         callbackParameter: 'callback',
-        timeout: 7000,
+        timeout: GLOBAL['timeout'],
         cache: true,
         beforeSend: function() {
-            $('#hint').html(load);
+            $('#hint').html(load).show();
         },
         complete: function(xOption, status) {
             if (status == 'success') {
-                $('#hint').empty();
+                $('#hint').hide();
             } else {
-                var error = contactme.clone().append('Request ' + status);
-                $('#hint').html(error);
-                error.show().delay(10000).fadeOut(800);
+                var error = $('<span>').text('Request ' + status).append(contact);
+                $('#hint').html(error).delay(10000).fadeOut(800);
             }
+        }
+    });
+
+    $('#hint').live('click', function() {
+        if ($(this).has('span#loading').length == 0) {
+            $(this).stop().fadeOut(800);
         }
     });
 }

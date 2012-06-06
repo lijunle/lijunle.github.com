@@ -95,21 +95,23 @@ function showSourcesList() {
     // bind show file source code when click filename
     $('.show-file').bind('click', function() {
         var file = GLOBAL['sourceslist'].path + this.text;
-        if ($('#code h2').text() == file) {
-            $('#code').empty();
-        } else {
-            getSource(GLOBAL['sourceslist'].node, file, function(source) {
-                source = source.data;
-                $('#code').empty();
-                $('#code').append($('<h2>').text(file)).append($('<pre>')
-                    .attr({ class: 'prettyprint linenums' })
-                    .append($('<code>')
-                        .attr({ class: 'language-cpp' })
-                        .text(source)
-                        )
-                    );
-                prettyPrint();
-            });
-        }
+        getSource(GLOBAL['sourceslist'].node, file, function(source) {
+            $('body').append($('<div id="overlay">'));
+            $('#code').empty()
+            .append($('<pre>')
+                .attr({ class: 'prettyprint linenums' })
+                .append($('<code>')
+                    .attr({ class: 'language-cpp' })
+                    .text(source.data)
+                    )
+                );
+            prettyPrint();
+        });
+    });
+
+    // bind click action to overlay
+    $('#overlay').live('click', function() {
+        $('#code').empty();
+        $('#overlay').remove();
     });
 }
