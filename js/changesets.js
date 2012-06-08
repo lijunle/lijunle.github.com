@@ -11,7 +11,6 @@ function getChangesetsList(start, limit) {
             GLOBAL['changesetslist'] = data.changesets.reverse();
             $.each(GLOBAL['changesetslist'], function() {
                 this.node = this.node.toUpperCase();
-                this.message = this.message.replace(/\n/g, '<br/>');
             });
             showChangesetsList();
         }
@@ -37,7 +36,7 @@ function showChangesetsList() {
             )
             .append($('<p>')
                 .attr({ class: 'paragraph' })
-                .html(this.message))
+                .html(this.message.replace(/\n/g, '<br/>')))
         );
     });
 
@@ -97,9 +96,10 @@ function showChangeset(node) {
             .attr({ class: 'subtitle' })
             .text(changeset.timestamp));
     // append paragraph content
+    var converter = new Markdown.Converter();
     $('#content').append($('<p>')
             .attr({ class: 'paragraph' })
-            .html(changeset.message));
+            .html(converter.makeHtml(changeset.message)));
 
     var fileslist = $('<div>').append($('<span>')
             .attr({ class: 'list-head' })
