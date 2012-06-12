@@ -105,17 +105,23 @@ function showSource(file) {
     // show source with overlay
     getSource(GLOBAL['sourceslist'].node, file, function(source) {
         $('body').append($('<div id="overlay">'));
-        $('#code').empty()
-        .append($('<pre>')
-            .attr({ class: 'prettyprint linenums' })
-            .append($('<code>')
-                .attr({ class: 'language-cpp' })
-                .text(source.data)
-                )
-            );
+        if (file.search(".html") == -1) {
+            $('#code').empty()
+            .append($('<pre>')
+                .attr({ class: 'prettyprint linenums' })
+                .append($('<code>')
+                    .attr({ class: 'language-cpp' })
+                    .text(source.data)
+                    )
+                );
 
-        // pretty the code with google code prettify
-        prettyPrint();
+            // pretty the code with google code prettify
+            prettyPrint();
+
+        } else {
+            var content = $(source.data);
+            $("#code").append($("<div id='webpage'>").html(content));
+        }
 
         // bind click action to overlay
         $('#overlay').bind('click', function() {

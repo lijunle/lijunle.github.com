@@ -207,3 +207,11 @@ pre {
     opacity: 0.5;
     z-index: 3;
 }
+
+#webpage {
+    margin: 1em;
+}
+
+#webpage pre {
+    border: none;
+}
