@@ -81,6 +81,18 @@ function showChangeset(node) {
         }
     });
 
+    // judge message is markdown syntax or not
+    if (changeset.message.charAt(0) == '#') {
+        var index = changeset.message.indexOf('\n');
+        var title = changeset.message.substr(2, index - 2);
+        var converter = new Markdown.Converter();
+        console.log(changeset.message.substr(index + 1));
+        var content = converter.makeHtml(changeset.message.substr(index + 1));
+    } else {
+        var title = changeset.node;
+        var content = changeset.message.replace(/\n/g, '<br/>');
+    }
+
     // show the specified changeset information to content
     $('#content').empty().attr({ class: 'changeset' });
     // append back anchor
@@ -90,16 +102,15 @@ function showChangeset(node) {
     // append title
     $('#content').append($('<h2>')
             .attr({ class: 'title' })
-            .text(changeset.node));
+            .text(title));
     // append subtitle for showing time
     $('#content').append($('<h4>')
             .attr({ class: 'subtitle' })
             .text(changeset.timestamp));
     // append paragraph content
-    var converter = new Markdown.Converter();
     $('#content').append($('<p>')
             .attr({ class: 'paragraph' })
-            .html(converter.makeHtml(changeset.message)));
+            .html(content));
 
     var fileslist = $('<div>').append($('<span>')
             .attr({ class: 'list-head' })
