@@ -90,7 +90,7 @@ changesets.openChangeset = function(node) { // open single changeset
     GLOBAL['jsonp'].done(_run);
 }
 
-changesets.setList = function(start) { //controller
+changesets.setList = function(start) { // controller
     changesets.view.list = [];
     var cnt = 0;
     var index = start;
