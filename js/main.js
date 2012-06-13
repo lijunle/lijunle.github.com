@@ -60,14 +60,14 @@ function configure() {
 
 function showPage(changeset, source) {
     if (changeset != undefined && changeset.match('page') != null) { // go to specify page
-        // TODO: should go to a centern node
         var page = changeset.substr(4);
-        getChangesetsList('tip', GLOBAL['pagelimits']);
-    } else if (changeset != undefined && changeset.length == 12) { // a hex node value
-        getChangesetsList(changeset, GLOBAL['pagelimits']);
+        changesets.turnToPage(page);
+    } else if (changeset != undefined && (changeset.length == 12 || changeset < 10000)) { // a hex node value
+        changesets.openChangeset(changeset);
+        /*getChangesetsList(changeset, GLOBAL['pagelimits']);
         GLOBAL['jsonp'].done(function() {
             showChangeset(changeset);
-        });
+        });*/
     } else if (source != undefined) { // it is a path
         var path = getPath(source);
         getSourcesList('tip', path[0]);

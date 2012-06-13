@@ -33,9 +33,10 @@ function getState() {
     };
 }
 
-function setState() {
+function setState(event) {
     if (event.state != null) {
         // FIXME too much bugs
+        eval(event.state.entry).setState(event.state.controller, event.state.view);
         /*if (event.state.class != 'sources') {
             $('#content')
                 .attr({ class: event.state.class })
@@ -97,13 +98,14 @@ function hint() {
             $('#hint').html(load).stop().stop().show();
         },
         complete: function(x, status) {
+            GLOBAL['async'] = false;
             if (status == 'success') {
                 $('#hint').hide();
-                if (GLOBAL['_hack_anchor'] === false) { // TODO hack not to make a new url
+                /*if (GLOBAL['_hack_anchor'] === false) { // TODO hack not to make a new url
                     delete GLOBAL['_hack_anchor'];
                 } else {
                     history.pushState(getState(), $('title').text(), x.anchor);
-                }
+                }*/
             } else {
                 var error = $('<span>').text('Request ' + status).append(contact);
                 $('#hint').html(error).delay(10000).fadeOut(800);
@@ -111,8 +113,7 @@ function hint() {
         }
     });
 
-    // FIXME too much bug for pop back history
-    //window.onpopstate = setState;
+    window.onpopstate = setState;
 }
 
 
