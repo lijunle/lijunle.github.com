@@ -1,144 +1,226 @@
-function getChangesetsList(start, limit) {
+var changesets = {
+    'model': {
+        'list': []
+    },
+    'view': {}
+};
+
+changesets.getList = function(start, limit) { // model, fetch data
+    GLOBAL['async'] = true;
     GLOBAL['jsonp'] = $.jsonp({
         url: GLOBAL['apibase'] + '/changesets',
         anchor: '?changeset=page' + '1',
-        data: {
-            'start': start,
-            'limit': limit,
-        },
-        success: function(data) {
-            GLOBAL['changesetscount'] = data.count;
-            GLOBAL['changesetslist'] = data.changesets.reverse();
-            $.each(GLOBAL['changesetslist'], function() {
-                this.node = this.node.toUpperCase();
-            });
-            showChangesetsList();
-        }
+        data: { 'start': start, 'limit': limit },
+    })
+    .done(function(data) {
+        changesets.model.count = data.count;
+        $(data.changesets).each(function() {
+            var tmp = changesets.filterMessage(this.message);
+            if (tmp.length == 1) {
+                this.title = this.node.toUpperCase();
+                this.content = tmp[0];
+            } else {
+                this.title = tmp[0];
+                this.content = $(tmp[1]).html();
+            }
+            changesets.model.list[this.node.toUpperCase()] = 
+            changesets.model.list[this.revision] = {
+                'revision': this.revision,
+                'node': this.node,
+                'title': this.title,
+                'timestamp': this.timestamp,
+                'content': this.content,
+                'files': this.files
+            };
+        });
     });
 }
 
-function showChangesetsList() {
+changesets.bootstrap = function() { // bootstrap
+    changesets.getList('tip', GLOBAL['pagelimits']);
+}
+
+changesets.openList = function(start, end) { // open list function
+    var _render = function() {
+        changesets.setList(start);
+        changesets.showList();
+        changesets.bindList();
+        
+        changesets.setPagination(start);
+        changesets.showPagination();
+        changesets.bindPagination();
+    }
+
+    var _run = function() {
+        if (start == 'tip') {
+            start = changesets.model.count - 1;
+            end = start - GLOBAL['pagelimits'] + 1;
+        }
+        var need = 0;
+        for (var i = start; need == 0 && i >= end; i--) {
+            if (typeof changesets.model.list[i] == 'undefined') {
+                need = 1;
+            }
+        }
+        
+        if (need) {
+            changesets.getList(start, start - end + 1);
+            GLOBAL['jsonp'].done(_render);
+        } else {
+            _render();
+        }
+    }
+    
+    if (typeof changesets.model.count == 'undefined') {
+        changesets.bootstrap();
+        GLOBAL['jsonp'].done(_run);
+    } else {
+        _run();
+    }
+}
+
+changesets.openChangeset = function(node) { // open single changeset
+    var _run = function() {
+        changesets.setChangeset(node);
+        changesets.showChangeset();
+        changesets.bindChangeset();
+    }
+
+    changesets.getList(node, 1);
+    GLOBAL['jsonp'].done(_run);
+}
+
+changesets.setList = function(start) { //controller
+    changesets.view.list = [];
+    var cnt = 0;
+    var index = start;
+    while (index >= 0 && cnt < GLOBAL['pagelimits']) {
+        changesets.view.list[cnt] = new Object();
+
+        var view = changesets.view.list[cnt]
+        var model = changesets.model.list[index];
+        
+        view.index = model.revision;
+        view.node = model.node;
+        view.title = model.title;
+        view.time = model.timestamp;
+        view.content = model.content;
+        view.files = model.files;
+        
+        cnt++;
+        index--;
+    }
+}
+
+changesets.showList = function() { // view
     // show changeset list to content
-    $('#content').empty().attr({ class: 'changesetslist' });
-    $.each(GLOBAL['changesetslist'], function() {
-        var index = GLOBAL['changesetscount'] - this.revision;
-        $('#content').append($('<div>')
-            .attr({ class: 'changeset' })
-            .append($('<p>')
-                .attr({ class: 'title' })
-                .append($('<span>')
-                    .attr({ class: 'index' })
-                    .text(index))
-                .append($('<a>')
-                    .attr({ class: 'node', href: 'javascript:void(0);' })
-                    .text(this.node)
-                )
+    $('#content').empty().attr({ 'class': 'changesetslist' });
+    $(changesets.view.list).each(function() {
+        $('#content').append($('<div class="changeset">')
+            .append($('<p class="title">')
+                .append($('<span class="index">').text(this.index))
+                .append($('<a class="node" href="javascript:void(0);">').text(this.title))
             )
-            .append($('<p>')
-                .attr({ class: 'paragraph' })
-                .html(this.message.replace(/\n/g, '<br/>')))
+            .append($('<p class="paragraph">').html(this.content))
         );
     });
+}
 
-    // append pagination bar
-    var page = $('<div>').attr({ class: 'pagination' });
-    $('#content').append(page);
-    var count = Math.ceil(GLOBAL['changesetscount'] / GLOBAL['pagelimits']);
-    var curpage = Math.ceil((GLOBAL['changesetscount'] - GLOBAL['changesetslist'][0].revision) / GLOBAL['pagelimits']);
-    for (var i = 1; i <= count; i++) {
-        var span = $('<span>');
-        page.append(span);
-        if (i == curpage) {
-            span.attr({ class: 'current' }).text(i);
-        } else {
-            span.append($('<a>')
-                    .attr({ href: 'javascript:void(0);', class: 'page' })
-                    .text(i)
-                    )
-        }
-    }
-
+changesets.bindList = function() { // bind function
     // bind a link for node anchor
     $('.node').bind('click', function() {
-        showChangeset(this.text);
-        var anchor = '?changeset=' + this.text;
-        history.pushState(getState(), $('title').text(), anchor);
-    });
-
-    // bind click action to page navigation bar
-    $('.page').bind('click', function() {
-        var start = GLOBAL['changesetscount'] - (this.text - 1) * GLOBAL['pagelimits'] - 1;
-        getChangesetsList(start, GLOBAL['pagelimits']);
+        var index = $(this).prev().text();
+        changesets.setChangeset(index);
+        changesets.showChangeset();
+        changesets.bindChangeset();
+        
+        var controller = [ 'Changeset' ];
+        var anchor = '?changeset=' + index;
+        history.pushState(changesets.getState(controller), $('title').text(), anchor);
     });
 }
 
-function showChangeset(node) {
-    // select the right DOM, equals to node
-    var changeset = null;
-    $(GLOBAL['changesetslist']).each(function() {
-        if (this.node == node) {
-            changeset = this;
-        }
-    });
+changesets.setPagination = function(start) { // controller
+    changesets.view.cntpage = Math.ceil(changesets.model.count / GLOBAL['pagelimits']);
+    changesets.view.curpage = Math.ceil((changesets.model.count - start) / GLOBAL['pagelimits']);
+}
 
-    // judge message is markdown syntax or not
-    if (changeset.message.charAt(0) == '#') {
-        var index = changeset.message.indexOf('\n');
-        var title = changeset.message.substr(2, index - 2);
-        var converter = new Markdown.Converter();
-        console.log(changeset.message.substr(index + 1));
-        var content = converter.makeHtml(changeset.message.substr(index + 1));
-    } else {
-        var title = changeset.node;
-        var content = changeset.message.replace(/\n/g, '<br/>');
-    }
-
-    // show the specified changeset information to content
-    $('#content').empty().attr({ class: 'changeset' });
-    // append back anchor
-    $('#content').append($('<a>')
-            .attr({ id: 'back', href: 'javascript:void(0);'})
-            .text('Back to list'));
-    // append title
-    $('#content').append($('<h2>')
-            .attr({ class: 'title' })
-            .text(title));
-    // append subtitle for showing time
-    $('#content').append($('<h4>')
-            .attr({ class: 'subtitle' })
-            .text(changeset.timestamp));
-    // append paragraph content
-    $('#content').append($('<p>')
-            .attr({ class: 'paragraph' })
-            .html(content));
-
-    var fileslist = $('<div>').append($('<span>')
-            .attr({ class: 'list-head' })
-            .text('Changed Files:'));
-    $('#content').append(fileslist);
-
-    // append files list
-    var list = $('<ul>');
-    $(fileslist).append(list);
-    $(changeset.files).each(function(index) {
-        var li = $('<li>').appendTo(list);
-        var file = $('<span>').attr({ class: 'filename' }).text(this.file).appendTo(li);
-        var status = $('<span>').attr({ class: 'status' }).appendTo(li);
-        if (this.type == 'removed') {
-            status.text('removed');
+changesets.showPagination = function() { // view
+    // append pagination bar
+    var page = $('<div class="pagination">').appendTo($('#content'));
+    for (var i = 1; i <= changesets.view.cntpage; i++) {
+        var anchor = $('<a>').appendTo(page);
+        if (i == changesets.view.curpage) {
+            anchor.attr({ 'class': 'curpage' }).text(i);
         } else {
-            status.append($('<a>')
-                .attr({ href: 'javascript:void(0);', class: 'show-file' })
-                .text('#')
-                );
+            anchor.attr({ 'class': 'lnkpage', 'href': 'javascript:void(0);' }).text(i);
+        }
+    }
+}
+
+changesets.bindPagination = function() { // bind function
+    // bind click action to pagination bar
+    $('.lnkpage').bind('click', function() {
+        changesets.turnToPage(this.text);
+    });
+}
+
+changesets.setChangeset = function(index) { // controller
+    changesets.view = [];
+    var model = changesets.model.list[index];
+    var view = changesets.view;
+    view.index = model.revision;
+    view.node = model.node;
+    view.title = model.title;
+    view.timestamp = model.timestamp;
+    view.content = model.content;
+    view.files = model.files;
+}
+
+changesets.showChangeset = function() { // view
+    // show the specified changeset information to content
+    $('#content').empty().attr({ 'class': 'changeset' });
+    // append back anchor
+    $('#content').append($('<a id="back" href="javascript:void(0);">').text('Back to list'));
+    // append title
+    $('#content').append($('<h2 class="title">').text(changesets.view.title));
+    // append subtitle for showing time
+    $('#content').append($('<h4 class="subtitle">').text(changesets.view.timestamp));
+    // append paragraph content
+    $('#content').append($('<p class="paragraph">').html(changesets.view.content));
+    // append files list
+    var fileslist = $('<div>').append($('<span class="list-head">').text('Changed Files:')).appendTo($('#content'));
+    var list = $('<ul>').appendTo(fileslist);
+    $(changesets.view.files).each(function(index) {
+        var li = $('<li>').appendTo(list);
+        var file = $('<span class="filename">').text(this.file).appendTo(li);
+        var anchor = $('<a class="status">').appendTo(li);
+        if (this.type == 'removed') {
+            anchor.addClass('removed').text('removed');
+        } else {
+            anchor.addClass('show-file').attr({ 'href': 'javascript:void(0);' }).text('#');
         }
     });
+}
 
+changesets.bindChangeset = function() { // bind function
     // bind back anchor back to changesets list
     $('#back').bind('click', function() {
-        showChangesetsList();
-        var anchor = '?changeset=' + 'tip';
-        history.pushState(getState(), $('title').text(), anchor);
+        var page = Math.floor((changesets.model.count - changesets.view.index - 1) / GLOBAL['pagelimits']);
+        var start = changesets.model.count - page * GLOBAL['pagelimits'] - 1;
+        var end = Math.max(0, start - GLOBAL['pagelimits'] + 1);
+        changesets.openList(start, end);
+        
+        var _anchor = function() {
+            var controller = [ 'List', 'Pagination' ];
+            var anchor = '?changeset=page' + (page + 1);
+            history.pushState(changesets.getState(controller), $('title').text(), anchor);
+        }
+        if (GLOBAL['async']) {
+            GLOBAL['jsonp'].done(_anchor);
+        } else {
+            _anchor();
+        }
     });
 
     // bind show file to file list
@@ -147,12 +229,8 @@ function showChangeset(node) {
         var pre = parent.find('pre');
         if (pre.length == 0) {
             var file = parent.find('.filename').text();
-            GLOBAL['_hack_anchor'] = false; // TODO hack not to make a new url
-            getSource(changeset.node, file, function(source) {
-                parent.append($('<pre>')
-                    .attr({ class: 'prettyprint linenums' })
-                    .append($('<code>').text(source.data))
-                    );
+            getSource(changesets.view.node, file, function(source) {
+                parent.append($('<pre class="prettyprint linenums">').append($('<code>').text(source.data)));
                 prettyPrint();
             });
         } else if (pre.is(':visible')) {
@@ -161,6 +239,68 @@ function showChangeset(node) {
             pre.show();
         }
     });
+}
 
+changesets.filterMessage = function(message) { // changesets contorller 
+    // judge message is markdown syntax or not
+    // return array of title and content
+    var converter = new Markdown.Converter();
+    var content = $('<div>').html(converter.makeHtml(message));
+    if ($(content).children('h1').length != 0) {
+        // that is markdown syntax
+        var title = $(content).children('h1').text();
+        $(content).children('h1').remove();
+        return [ title, content ];
+    } else {
+        // not markdown syntax
+        return [ message.replace(/\n/g, '<br/>') ];
+    }
+}
+
+changesets.turnToPage = function(page) { // controller, for turning pages
+    var _turnToPage = function() {
+        var start = changesets.model.count - (page - 1) * GLOBAL['pagelimits'] - 1;
+        var end = Math.max(0, start - GLOBAL['pagelimits'] + 1);
+        changesets.openList(start, end);
+        
+        var _anchor = function() {
+            var controller = [ 'List', 'Pagination' ];
+            var anchor = "?changeset=page" + page;
+            history.pushState(changesets.getState(controller), $('title').text(), anchor);
+        }
+        if (GLOBAL['async']) {
+            GLOBAL['jsonp'].done(_anchor);
+        } else {
+            _anchor();
+        }
+    }
+
+    if (typeof changesets.model.count == 'undefined') {
+        changesets.bootstrap();
+        GLOBAL['jsonp'].done(_turnToPage);
+    } else {
+        _turnToPage();
+    }
+}
+
+changesets.getState = function(controller) {
+    return {
+        'entry': 'changesets',
+        'controller': controller,
+        'view': changesets.view
+    };
+}
+
+changesets.setState = function(controller, view) {
+    changesets.view = view;
+    
+    $(controller).each(function() {
+        eval('changesets.show' + this + '()');
+        eval('changesets.bind' + this + '()');
+    });
+}
+
+function getChangesetsList(start, limit) {
+    changesets.openList(start);
 }
 
