@@ -64,10 +64,6 @@ function showPage(changeset, source) {
         changesets.turnToPage(page);
     } else if (changeset != undefined && (changeset.length == 12 || changeset < 10000)) { // a hex node value
         changesets.openChangeset(changeset);
-        /*getChangesetsList(changeset, GLOBAL['pagelimits']);
-        GLOBAL['jsonp'].done(function() {
-            showChangeset(changeset);
-        });*/
     } else if (source != undefined) { // it is a path
         var path = getPath(source);
         getSourcesList('tip', path[0]);
@@ -77,6 +73,6 @@ function showPage(changeset, source) {
             });
         }
     } else {
-        getChangesetsList('tip', GLOBAL['pagelimits']);
+        changesets.openChangeset('tip');
     }
 }
