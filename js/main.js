@@ -10,16 +10,15 @@ $(function() {
     $('#header').append($('<h1>').text(GLOBAL['blogname']));
 
     // append information to menu bar
-    var changesets = $('<a>').attr({ href: 'javascript:void(0);', id: 'changesets' }).text('Changesets');
-    var sources = $('<a>').attr({ href: 'javascript:void(0);', id: 'sources' }).text('Sources');
-    $('#menu').append(changesets).append(sources);
+    $('<a id="changesets" href="javascript:void(0);">').text('Changesets').appendTo($('#menu'));
+    $('<a id="sources" href="javascript:void(0);">').text('Sources').appendTo($('#menu'));
 
     // append footer to footer div
     $('#footer').html(GLOBAL['footer']);
 
     // bind click action for menu
     $('#changesets').click(function() {
-        getChangesetsList('tip', GLOBAL['pagelimits'], 'list');
+        changesets.openList('tip');
     });
     $('#sources').click(function() {
         getSourcesList('tip', '');
@@ -73,6 +72,6 @@ function showPage(changeset, source) {
             });
         }
     } else {
-        changesets.openChangeset('tip');
+        changesets.openList('tip');
     }
 }
