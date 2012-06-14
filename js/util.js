@@ -98,7 +98,7 @@ function hint() {
             $('#hint').html(load).stop().stop().show();
         },
         complete: function(x, status) {
-            GLOBAL['async'] = false;
+            delete GLOBAL['jsonp'];
             if (status == 'success') {
                 $('#hint').hide();
                 /*if (GLOBAL['_hack_anchor'] === false) { // TODO hack not to make a new url

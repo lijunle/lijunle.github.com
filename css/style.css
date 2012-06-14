@@ -63,8 +63,18 @@ a:hover {
     margin: 1.3em 1em;
 }
 
-.changesetslist > .changeset > p {
+.changesetslist > .changeset p {
     margin: 0.3em auto;
+}
+
+.changesetslist > .changeset > .paragraph ul {
+    margin: 0.3em auto auto 0em;
+    padding: 0px 0px 0px 1em;
+}
+
+.changesetslist > .changeset > .paragraph ol {
+    margin: 0.3em auto auto 0em;
+    padding: 0px 0px 0px 1.5em;
 }
 
 .changesetslist > .changeset .index {
@@ -92,19 +102,18 @@ a:hover {
     margin: 2em 0em 1.5em 1.3em;
 }
 
-.pagination .current {
+.pagination a {
+    margin: 0 0.4em;
+    border: 1px dashed #8D8D8D;
+    padding: 0.25em 0.45em;
+}
+
+.pagination a.curpage {
     border: 1px solid #8D8D8D;
     font-weight: bold;
 }
 
-.pagination > span {
-    margin: 0 0.4em;
-    border: 1px dashed #8D8D8D;
-    padding: 0.25em
-}
-
-.pagination > span:not(.current):hover {
-    color: green;
+.pagination a.lnkpage:hover {
     background: #F0F0F0;
 }
 

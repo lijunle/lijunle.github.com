@@ -6,7 +6,6 @@ var changesets = {
 };
 
 changesets.getList = function(start, limit) { // model, fetch data
-    GLOBAL['async'] = true;
     GLOBAL['jsonp'] = $.jsonp({
         url: GLOBAL['apibase'] + '/changesets',
         anchor: '?changeset=page' + '1',
@@ -216,7 +215,7 @@ changesets.bindChangeset = function() { // bind function
             var anchor = '?changeset=page' + (page + 1);
             history.pushState(changesets.getState(controller), $('title').text(), anchor);
         }
-        if (GLOBAL['async']) {
+        if (typeof GLOBAL['jsonp'] != 'undefined') {
             GLOBAL['jsonp'].done(_anchor);
         } else {
             _anchor();
@@ -268,7 +267,7 @@ changesets.turnToPage = function(page) { // controller, for turning pages
             var anchor = "?changeset=page" + page;
             history.pushState(changesets.getState(controller), $('title').text(), anchor);
         }
-        if (GLOBAL['async']) {
+        if (typeof GLOBAL['jsonp'] != 'undefined') {
             GLOBAL['jsonp'].done(_anchor);
         } else {
             _anchor();
@@ -298,9 +297,5 @@ changesets.setState = function(controller, view) {
         eval('changesets.show' + this + '()');
         eval('changesets.bind' + this + '()');
     });
-}
-
-function getChangesetsList(start, limit) {
-    changesets.openList(start);
 }
 
