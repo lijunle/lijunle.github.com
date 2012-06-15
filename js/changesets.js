@@ -133,6 +133,8 @@ changesets.bindList = function() { // bind function
         changesets.showChangeset();
         changesets.bindChangeset();
         
+        scroll(0, 0);
+        
         var controller = [ 'Changeset' ];
         var anchor = '?changeset=' + index;
         history.pushState(changesets.getState(controller), $('title').text(), anchor);
@@ -209,8 +211,9 @@ changesets.bindChangeset = function() { // bind function
         var start = changesets.model.count - page * GLOBAL['pagelimits'] - 1;
         var end = Math.max(0, start - GLOBAL['pagelimits'] + 1);
         changesets.openList(start, end);
-        
+
         var _anchor = function() {
+            scroll(0, 0);
             var controller = [ 'List', 'Pagination' ];
             var anchor = '?changeset=page' + (page + 1);
             history.pushState(changesets.getState(controller), $('title').text(), anchor);
@@ -261,8 +264,9 @@ changesets.turnToPage = function(page) { // controller, for turning pages
         var start = changesets.model.count - (page - 1) * GLOBAL['pagelimits'] - 1;
         var end = Math.max(0, start - GLOBAL['pagelimits'] + 1);
         changesets.openList(start, end);
-        
+
         var _anchor = function() {
+            scroll(0, 0);
             var controller = [ 'List', 'Pagination' ];
             var anchor = "?changeset=page" + page;
             history.pushState(changesets.getState(controller), $('title').text(), anchor);
