@@ -1,5 +1,7 @@
 var blog = {
-    'model': {}
+    'model': {
+        'slide_time': 250
+    }
 };
 
 $(function() {
@@ -77,7 +79,7 @@ blog.showContent = function() {
     } else if (changeset != undefined && (changeset.length == 12 || changeset < 10000)) { // a hex node value
         changesets.openChangeset(changeset);
     } else if (source != undefined) { // it is a path
-        sources.open('tip', source);
+        sources.open('tip', source, true);
     } else {
         changesets.openList('tip');
     }

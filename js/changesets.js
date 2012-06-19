@@ -20,28 +20,33 @@ var changesets = {
 changesets.openList = function(start, end) { // open list function
     changesets.get(start, end, function(node) {
         changesets.setList(node);
-        changesets.showList();
-        changesets.bindList();
-        
         changesets.setPagination(node);
-        changesets.showPagination();
-        changesets.bindPagination();
+        changesets.slide({
+            'before': changesets.showList,
+            'after': function() {
+                changesets.bindList();
+                changesets.showPagination();
+                changesets.bindPagination();
 
-        var controller = [ 'List', 'Pagination' ];
-        var anchor = '?changeset=page' + changesets.view.curpage;
-        changesets.setAnchor(controller, anchor);
+                var anchor = '?changeset=page' + changesets.view.curpage;
+                changesets.setAnchor(anchor);
+            }
+        });
     });
 }
 
 changesets.openChangeset = function(start) { // open single changeset
     changesets.get(start, start, function(node) {
         changesets.setChangeset(node);
-        changesets.showChangeset();
-        changesets.bindChangeset();
+        changesets.slide({
+            'before': changesets.showChangeset,
+            'after': function() {
+                changesets.bindChangeset();
 
-        var controller = [ 'Changeset' ];
-        var anchor = '?changeset=' + changesets.view.index;
-        changesets.setAnchor(controller, anchor);
+                var anchor = '?changeset=' + changesets.view.index;
+                changesets.setAnchor(anchor);
+            }
+        });
     });
 }
 
@@ -138,9 +143,26 @@ changesets.setList = function(start) { // controller
     }
 }
 
+changesets.slide = function(callback) {
+    var dir = ['left', 'right'];
+    var length = [$('#content.changesetslist').length, $('#content.changeset').length];
+    if (length[0] == 0) {
+        dir = ['right', 'left'];
+    }
+    if (length[0] == 0 && length[1] == 0) {
+        callback.before();
+        callback.after();
+    } else {
+        $('#content').hide('drop', {direction: dir[0]}, blog.model.slide_time, function() {
+            callback.before();
+            $('#content').show('drop', {direction: dir[1]}, blog.model.slide_time, callback.after);
+        });
+    }
+}
+
 changesets.showList = function() { // view
     // show changeset list to content
-    $('#content').empty().attr({ 'class': 'changesetslist' });
+    $('#content').empty().removeClass().addClass('changesetslist');
     $(changesets.view.list).each(function() {
         $('#content').append($('<div class="changeset">')
             .append($('<p class="title">')
@@ -171,9 +193,9 @@ changesets.showPagination = function() { // view
     for (var i = 1; i <= changesets.view.cntpage; i++) {
         var anchor = $('<a>').appendTo(page);
         if (i == changesets.view.curpage) {
-            anchor.attr({ 'class': 'curpage' }).text(i);
+            anchor.addClass('curpage').text(i);
         } else {
-            anchor.attr({ 'class': 'lnkpage', 'href': 'javascript:void(0);' }).text(i);
+            anchor.addClass('lnkpage').attr('href', 'javascript:void(0);').text(i);
         }
     }
 }
@@ -197,9 +219,9 @@ changesets.setChangeset = function(index) { // controller
     view.files = model.files;
 }
 
-changesets.showChangeset = function() { // view
+changesets.showChangeset = function(callback) { // view
     // show the specified changeset information to content
-    $('#content').empty().attr({ 'class': 'changeset' });
+    $('#content').empty().removeClass().addClass('changeset');
     // append back anchor
     $('#content').append($('<a id="back" href="javascript:void(0);">').text('Back to list'));
     // append title
@@ -266,24 +288,33 @@ changesets.filterMessage = function(message) { // changesets contorller
     }
 }
 
-changesets.getState = function(controller) {
+changesets.getState = function() {
     return {
         'entry': 'changesets',
-        'controller': controller,
         'view': changesets.view
     };
 }
 
-changesets.setState = function(view, controller) {
+changesets.setState = function(view) {
     changesets.view = view;
-    
-    $(controller).each(function() {
-        eval('changesets.show' + this + '()');
-        eval('changesets.bind' + this + '()');
-    });
+    if (typeof view.list != 'undefined') { // list
+        changesets.slide({
+            'before': changesets.showList,
+            'after': function() {
+                changesets.bindList();
+                changesets.showPagination();
+                changesets.bindPagination();
+            }
+        });
+    } else { // content
+        changesets.slide({
+            'before': changesets.showChangeset,
+            'after': changesets.bindChangeset
+        });
+    }
 }
 
-changesets.setAnchor = function(controller, anchor) {
+changesets.setAnchor = function(anchor) {
     scroll(0, 0);
-    history.pushState(changesets.getState(controller), $('title').text(), anchor);
+    history.pushState(changesets.getState(), $('title').text(), anchor);
 }

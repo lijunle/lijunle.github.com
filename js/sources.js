@@ -6,7 +6,7 @@ var sources = {
     'view': {}
 };
 
-sources.open = function(node, path) { // open function
+sources.open = function(node, path, bootstrap) { // open function
     if (node == 'tip') {
         node = sources.model.tip;
     }
@@ -16,21 +16,22 @@ sources.open = function(node, path) { // open function
     sources.get(node, path, function(pt) {
         if (pt.type == 'folder') {
             sources.setList(pt);
-            sources.showList();
-            sources.bindList();
+            sources.slideList({
+                'before': sources.showList,
+                'after': sources.bindList
+            });
         } else if (pt.type == 'file') {
             sources.setList(pt.parent);
-            sources.showList();
-
             sources.setFile(pt);
+            sources.showList();
             sources.showFile();
             sources.bindFile();
         }
         sources.setAnchor();
-    });
+    }, bootstrap);
 }
 
-sources.get = function(node, path, callback) { // model function, encapsulate everything about jsonp
+sources.get = function(node, path, callback, bootstrap) { // model function, encapsulate everything about jsonp
     var pt = sources.travel(node, path);
     if (pt != 'undefined' && pt.full) {
         callback(pt);
@@ -39,7 +40,7 @@ sources.get = function(node, path, callback) { // model function, encapsulate ev
         sources.jsonp(node, path, function(data) {
             data.node = data.node.toUpperCase();
             if (node == 'tip') {
-                sources.model.tip = data.node.toUpperCase();
+                sources.model.tip = data.node;
             }
             if (data.path.charAt(0) == '/') { // folder
                 var pt = sources.createFolder(data);
@@ -47,15 +48,25 @@ sources.get = function(node, path, callback) { // model function, encapsulate ev
             } else { // file
                 var tmp = data.path.split('/');
                 var file = tmp[ tmp.length - 1 ];
-                var path = '';
+                data.path = '';
                 for (var i = 0; i < tmp.length - 1; i++) {
-                    path = path + '/' + tmp[i];
+                    data.path = data.path + '/' + tmp[i];
                 }
-                sources.jsonp(data.node, path, function(folder) {
-                    var pt = sources.createFolder(folder);
+                if (typeof bootstrap != 'undefined' && bootstrap) {
+                    console.log('case1');
+                    sources.jsonp(data.node, data.path, function(folder) {
+                        folder.node = folder.node.toUpperCase();
+                        var pt = sources.createFolder(folder);
+                        pt[file].data = data.data;
+                        callback(pt[file]);
+                    });
+                } else {
+                    console.log('case2');
+                    var pt = sources.createFolder(data);
+                    sources.createFile(data, file, data, pt);
                     pt[file].data = data.data;
                     callback(pt[file]);
-                });
+                }
             }
         });
     }
@@ -74,19 +85,23 @@ sources.createFolder = function(data) { // model function, create model nodes
     $(data.files).each(function() {
         var tmp = this.path.split('/');
         var file = tmp[ tmp.length - 1 ];
-        if (typeof pt[file] == 'undefined') {
-            if (typeof pt[file] == 'undefined') {
-                pt[file] = [];
-                pt[file].type = 'file';
-                pt[file].path = '/' + data.node + '/' + this.path;
-                pt[file].revision = this.revision.toUpperCase();
-                pt[file].size = this.size;
-                pt[file].timestamp = this.timestamp;
-                pt[file].parent = pt;
-            }
-        }
+        sources.createFile(data, file, this, pt);
     });
     return pt;
+}
+
+sources.createFile = function(data, file, item, pt) {
+    if (typeof pt[file] == 'undefined') {
+        pt[file] = [];
+        pt[file].type = 'file';
+        pt[file].path = '/' + data.node + '/' + item.path;
+        pt[file].parent = pt;
+    }
+    if (typeof item.revision != 'undefined') { // if item has revision, it will has all
+        pt[file].revision = item.revision.toUpperCase();
+        pt[file].size = item.size;
+        pt[file].timestamp = item.timestamp;
+    }
 }
 
 sources.travel = function(node, path, mode) { // model function, travel the file tree
@@ -155,11 +170,9 @@ sources.setList = function(pt) { // set view function
     sources.view.list.sort(function(a, b) {
         if (a.type != b.type) {
             return (a.type == 'folder') ? -1 : +1;
-        } else if (a.type == 'folder') {
-            return (a.name < b.name) ? -1 : +1;
         } else {
             var ret = parseInt(a.name) - parseInt(b.name);
-            if (ret != 0) {
+            if (ret != 0 && isNaN(ret) == false) {
                 return ret;
             } else {
                 return (a.name < b.name) ? -1 : +1;
@@ -168,9 +181,9 @@ sources.setList = function(pt) { // set view function
     });
 }
 
-sources.showList = function() { // show view function
+sources.showList = function() {
     // clear the content DOM
-    $('#content').empty().addClass('sources');
+    $('#content').empty().removeClass().addClass('sources');
 
     // append path nevigation bar
     var path = $('<div class="path">').appendTo($('#content'));
@@ -206,6 +219,23 @@ sources.showList = function() { // show view function
                 );
         }
     });
+}
+
+sources.slideList = function(callback) { // show view function
+    var dir = ['left', 'right'];
+    var length = [$('.path a').length, sources.view.path.length];
+    if (length[0] > length[1]) {
+        dir = ['right', 'left'];
+    }
+    if (length[0] == 0) {
+        callback.before();
+        callback.after();
+    } else {
+        $('#content').hide('drop', {direction: dir[0]}, blog.model.slide_time, function() {
+            callback.before();
+            $('#content').show('drop', {direction: dir[1]}, blog.model.slide_time, callback.after);
+        });
+    }
 }
 
 sources.bindList = function() {
@@ -282,12 +312,16 @@ sources.getState = function() {
 sources.setState = function(view, controller) {
     $('#overlay').remove();
     sources.view = view;
-    sources.showList();
-    sources.bindList();
-    if (typeof view.file != 'undefined') { // file
-        sources.showFile();
-        sources.bindFile();
-    }
+    sources.slideList({
+        'before': sources.showList,
+        'after': function() {
+            sources.bindList();
+            if (typeof view.file != 'undefined') { // file
+                sources.showFile();
+                sources.bindFile();
+            }
+        }
+    });
 }
 
 sources.setAnchor = function() {
