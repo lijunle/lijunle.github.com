@@ -135,29 +135,35 @@ sources.setList = function(pt) { // set view function
     for (var i = 2; i < paths.length; i++) {
         sources.view.path.push(paths[i]);
     }
-    // store list object into tmp array, then sort it
-    var tmp = [];
+    sources.view.list = [];
     for (var key in pt) {
-        if ((pt[key].type == 'folder' || pt[key].type == 'file') && key != 'parent') {
-            tmp.push([ key, pt[key] ]);
+        if (pt[key].type == 'folder') {
+            sources.view.list.push({
+                'name': key != 'parent' ? key : '..',
+                'type': pt[key].type
+            });
+        } else if (pt[key].type == 'file') {
+            sources.view.list.push({
+                'name': key,
+                'type': pt[key].type,
+                'size': pt[key].size,
+                'timestamp': pt[key].timestamp,
+                'revision': pt[key].revision
+            });
         }
     }
-    tmp.sort(function(a, b) {
-        if (a[1].type != b[1].type) {
-            return (a[1].type == 'folder') ? -1 : +1;
+    sources.view.list.sort(function(a, b) {
+        if (a.type != b.type) {
+            return (a.type == 'folder') ? -1 : +1;
+        } else if (a.type == 'folder') {
+            return (a.name < b.name) ? -1 : +1;
         } else {
-            return (a[0] < b[0]) ? -1 : +1;
-        }
-    });
-    // transform list object from tmp array to view list
-    sources.view.list = [];
-    $(tmp).each(function() {
-        sources.view.list[ this[0] ] = [];
-        sources.view.list[ this[0] ].type = this[1].type;
-        if (this[1].type == 'file') {
-            sources.view.list[ this[0] ].size = this[1].size;
-            sources.view.list[ this[0] ].timestamp = this[1].timestamp;
-            sources.view.list[ this[0] ].revision = this[1].revision;
+            var ret = parseInt(a.name) - parseInt(b.name);
+            if (ret != 0) {
+                return ret;
+            } else {
+                return (a.name < b.name) ? -1 : +1;
+            }
         }
     });
 }
@@ -183,29 +189,23 @@ sources.showList = function() { // show view function
     // append code view frame
     $('#content').append($('<div id="code">'));
 
-    // append folders infomation to table
-    for (var key in sources.view.list) {
-        var value = sources.view.list[key];
-        if (value.type == 'folder') {
+    // append folders and files infomation to table
+    $(sources.view.list).each(function() {
+        var item = $('<a class="source" href="javascript:void(0);">').text(this.name);
+        if (this.type == 'folder') {
             table.append($('<tr>')
-                .append($('<td>').append($('<a class="folder" href="javascript:void(0);">').text(key)))
+                .append($('<td>').append(item))
                 .append($('<td>'))
                 .append($('<td>')));
-        }
-    }
-
-    // append files infomation to table
-    for (var key in sources.view.list) {
-        var value = sources.view.list[key];
-        if (value.type == 'file') {
+        } else if (this.type == 'file') {
             table.append($('<tr>')
-                .append($('<td>').append($('<a class="file" href="javascript:void(0);">').text(key)))
-                .append($('<td>').text(value.size + 'B'))
-                .append($('<td>').append(value.timestamp).append(' at ')
-                        .append($('<a class="changeset" href="javascript:void(0);">').text(value.revision)))
+                .append($('<td>').append(item))
+                .append($('<td>').text(this.size + 'B'))
+                .append($('<td>').append(this.timestamp).append(' at ')
+                        .append($('<a class="changeset" href="javascript:void(0);">').text(this.revision)))
                 );
         }
-    }
+    });
 }
 
 sources.bindList = function() {
@@ -223,24 +223,20 @@ sources.bindList = function() {
         sources.open(sources.view.node, path);
     });
 
-    // show clicked anchor
-    var _show = function(text) {
+    // bind click action to folders and files anchors
+    $('.source').bind('click', function() {
         var path = '/';
-        for (var i = 1; i < sources.view.path.length; i++) {
+        var length = sources.view.path.length;
+        if (this.text == '..') {
+            length--;
+        }
+        for (var i = 1; i < length; i++) {
             path = path + sources.view.path[i] + '/';
         }
-        path = path + text;
+        if (this.text != '..') {
+            path = path + this.text;
+        }
         sources.open(sources.view.node, path);
-    }
-
-    // bind click action to folders anchors
-    $('.folder').bind('click', function() {
-        _show(this.text);
-    });
-
-    // bind click action to files anchors
-    $('.file').bind('click', function() {
-        _show(this.text);
     });
 }
 
