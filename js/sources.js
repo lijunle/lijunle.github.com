@@ -1,5 +1,35 @@
 var sources = {
     'model': {
+        /*
+         * tip:     indicating the `tip` tag is now referencing to which node hex value,
+         *          it will be *tip* before the bootstrap, but after the first jsonp request,
+         *          this value will be correctly set.
+         *
+         * node:    the stored file tree hierarchy model, every folder and file will be created
+         *          dynamically when they are requested and received.
+         *      key:    changeset node hex value, stand for a specified snapshot
+         *      value:  type:   indicate this is a folder or a file. only files are assigned `file`,
+         *                      all of others are `folder`
+         *              path:   the total path of this folder or file. be attention that, becase of
+         *                      generated commodiously, the node hex value will be the the prefix of
+         *                      the every path. and no more slash (`\`) is in the end
+         *              parent: the referce pointing the parent tree node of the current one
+         *              full:   indicate whether the list in the folder is completed or not,
+         *                      when open a folder, check it is full or not. if not, request it
+         *                      (folder only)
+         *              data:   the file content. when the suffix is `.html`, the data will be parse
+         *                      into HTML page, otherwise it will be rendered by *google prettify*
+         *                      (file only)
+         *              size:   the file size. unit: byte
+         *                      (file only)
+         *              timestamp:  the last modified timestamp for this file
+         *                          (file only)
+         *              revision:   this file is last modified in this changeset. we can find more
+         *                          information about this file with looking into this changeset
+         *                          comment. be attention that this value will be hex
+         *                          (file only)
+         *
+         */
         'node': { 'path': '' },
         'tip': 'tip'
     },
@@ -14,6 +44,7 @@ sources.open = function(node, path, bootstrap) { // open function
         path = '';
     }
     sources.get(node, path, function(pt) {
+        console.log(sources.model);
         if (pt.type == 'folder') {
             sources.setList(pt);
             sources.slideList({

@@ -1,16 +1,19 @@
 var changesets = {
     'model': {
         /* 
-         * count: integer, the total number of changesets
-         * list: object, changeset object
-         *      revison/hex name: every single changeset object
-         *          content: changeset comment
-         *          files: changeset file list
-         *          node: changeset node name (hex value)
-         *          revision: changeset revision name (decimal value)
-         *          timestamp: timestamp for changeset commit
-         *          title: if using Markdown syntax for writing comment,
-         *                 the head will be title, otherwise the node hex
+         * count:   the total number of changesets in the repostory
+         *
+         * list:    the list of changesets
+         *      key:    revison/hex value, reference to every single changeset
+         *      value:  content:    changeset comment, for displaying as blog content
+         *              files:      changed files list in the specified changeset
+         *              node:       changeset node hex value (hex)
+         *              revision:   changeset revision value (decimal)
+         *              timestamp:  timestamp for every changeset
+         *              title:      if Markdown is used for writing comment,
+         *                          the head will be title in the changeset comment,
+         *                          otherwise it is the node hex value
+         *
          */
         'list': { }
     },
