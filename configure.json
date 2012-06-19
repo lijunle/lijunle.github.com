@@ -1,10 +1,13 @@
 {
-    "blog": "LiJunLe ACM Code",
     "api": "https://api.bitbucket.org/1.0/repositories/",
     "username": "lijunle",
     "repository": "acm",
+
+    "blog": "LiJunLe ACM Code",
+    "contact_me": "http://weibo.com/lijunle",
+    "footer": "<span>power by <a href=\"https://bitbucket.org/lijunle/lijunle.bitbucket.org\" target=\"_blank\">LiJunLe</a> and his <a href=\"https://bitbucket.org/lijunle/acm\" target=\"_blank\">code</a>.</span>",
+
     "timeout": "10000",
     "page_limits": 15,
-    "contact_me": "http://weibo.com/lijunle",
-    "footer": "<span>power by <a href=\"https://bitbucket.org/lijunle/lijunle.bitbucket.org\" target=\"_blank\">LiJunLe</a> and his <a href=\"https://bitbucket.org/lijunle/acm\" target=\"_blank\">code</a>.</span>"
+    "slide_time": 250
 }

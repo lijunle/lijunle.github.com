@@ -11,14 +11,13 @@ hint.setup = function() {
         .append($('<span id="loadingpoint">'))
         .append($('<a id="stop" href="javascript:void(0);">').text('stop'));
 
-    // create abort DOM node
-    var abort = $('<span>').text('The requeset is aborted by user.');
-
     // create contact DOM node
     var contact = $('<span>')
         .append(', contact ')
         .append($('<a>').attr({ href: blog.model.contact_me, target: '_blank' }).text('me'))
-        .append(' or try again later.');
+        .append(' or ')
+        .append($('<a id="try" href="javascript:void(0);">').text('try'))
+        .append(' again later.');
 
     // setup jsonp request for hint
     $.jsonp.setup({
@@ -29,7 +28,6 @@ hint.setup = function() {
             $('#hint').html(load).stop().stop().show();
         },
         complete: function(x, status) {
-            delete blog.model.jsonp;
             if (status == 'success') {
                 $('#hint').hide();
             } else {
@@ -58,11 +56,21 @@ hint.bind = function() {
     }, timeout);
 
     // bind anchor to abort jsonp request
-    $('#stop').live('click', function() {
+    var abort = $('<span>').text('The requeset is aborted by user.');
+    $('#hint #stop').live('click', function() {
         if (blog.model.jsonp instanceof Object) {
             blog.model.jsonp.abort();
             $('#hint').html(abort).delay(2000).fadeOut(800);
         }
-    })
+    });
+
+    // bind anchor to try the jsonp request again
+    $('#hint #try').live('click', function() {
+        blog.model.jsonp = $.jsonp({
+            url: blog.model.jsonp.url,
+            data: blog.model.jsonp.data,
+            success: blog.model.jsonp.success
+        });
+    });
 }
 

@@ -1,6 +1,18 @@
 var blog = {
     'model': {
-        'slide_time': 250
+        /*
+         * apibase:     the url base for all api request
+         *
+         * blog_name:   the blog name
+         * footer:      the HTML target for footer to display
+         * contact_me:  the URI for contacting me, it can be the weibo link, or email address
+         *
+         * timeout:     the jsonp request will be abort automatically if no respone is
+         *              received in this specified time. unit: millisecond
+         * page_limits: how many changesets will be shown on one page
+         * slide_time:  the time for the sliding animation, default is 250. unit: millisecond
+         * 
+         */
     }
 };
 
@@ -21,11 +33,14 @@ blog.configure = function() {
         async: false,
         success: function(data) {
             blog.model.apibase = data['api'] + data['username'] + '/' + data['repository'];
+
             blog.model.blog_name = data['blog'];
+            blog.model.footer = data['footer'];
+            blog.model.contact_me = data['contact_me'];
+
             blog.model.timeout = data['timeout'];
             blog.model.page_limits = data['page_limits'];
-            blog.model.contact_me = data['contact_me'];
-            blog.model.footer = data['footer'];
+            blog.model.slide_time = data['slide_time'];
         }
     });
     hint.run();

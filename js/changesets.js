@@ -115,7 +115,6 @@ changesets.getList = function(start, limit, callback) {
 changesets.jsonp = function(start, limit, callback) { // model, fetch data
     blog.model.jsonp = $.jsonp({
         url: blog.model.apibase + '/changesets',
-        anchor: '?changeset=page' + '1',
         data: { 'start': start, 'limit': limit },
         success: callback
     });
