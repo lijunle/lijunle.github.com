@@ -4,7 +4,7 @@
     "username": "lijunle",
     "repository": "acm",
     "timeout": "10000",
-    "pagelimits": 15,
-    "contactme": "http://weibo.com/lijunle",
+    "page_limits": 15,
+    "contact_me": "http://weibo.com/lijunle",
     "footer": "<span>power by <a href=\"https://bitbucket.org/lijunle/lijunle.bitbucket.org\" target=\"_blank\">LiJunLe</a> and his <a href=\"https://bitbucket.org/lijunle/acm\" target=\"_blank\">code</a>.</span>"
 }

@@ -1,29 +1,100 @@
 var changesets = {
     'model': {
-        'list': []
+        /* 
+         * count: integer, the total number of changesets
+         * list: object, changeset object
+         *      revison/hex name: every single changeset object
+         *          content: changeset comment
+         *          files: changeset file list
+         *          node: changeset node name (hex value)
+         *          revision: changeset revision name (decimal value)
+         *          timestamp: timestamp for changeset commit
+         *          title: if using Markdown syntax for writing comment,
+         *                 the head will be title, otherwise the node hex
+         */
+        'list': { }
     },
     'view': {}
 };
 
-changesets.getList = function(start, limit) { // model, fetch data
-    GLOBAL['jsonp'] = $.jsonp({
-        url: GLOBAL['apibase'] + '/changesets',
-        anchor: '?changeset=page' + '1',
-        data: { 'start': start, 'limit': limit },
-    })
-    .done(function(data) {
+changesets.openList = function(start, end) { // open list function
+    changesets.get(start, end, function(node) {
+        changesets.setList(node);
+        changesets.showList();
+        changesets.bindList();
+        
+        changesets.setPagination(node);
+        changesets.showPagination();
+        changesets.bindPagination();
+
+        var controller = [ 'List', 'Pagination' ];
+        var anchor = '?changeset=page' + changesets.view.curpage;
+        changesets.setAnchor(controller, anchor);
+    });
+}
+
+changesets.openChangeset = function(start) { // open single changeset
+    changesets.get(start, start, function(node) {
+        changesets.setChangeset(node);
+        changesets.showChangeset();
+        changesets.bindChangeset();
+
+        var controller = [ 'Changeset' ];
+        var anchor = '?changeset=' + changesets.view.index;
+        changesets.setAnchor(controller, anchor);
+    });
+}
+
+changesets.turnToPage = function(page) { // controller, for turning pages
+    changesets.bootstrap(function() {
+        var start = changesets.model.count - (page - 1) * blog.model.page_limits - 1;
+        var end = Math.max(0, start - blog.model.page_limits + 1);
+        changesets.openList(start, end);
+    });
+}
+
+changesets.get = function(start, end, callback) {
+    changesets.bootstrap(function() {
+        if (start == 'tip') {
+            start = changesets.model.count - 1;
+            end = start - blog.model.page_limits + 1;
+        }
+        var need = false;
+        for (var i = start; need == false && i >= end; i--) {
+            if (typeof changesets.model.list[i] == 'undefined') {
+                need = true;
+            }
+        }
+        if (need == false) {
+            callback(start);
+        } else {
+            changesets.getList(start, start - end + 1, callback);
+        }
+    });
+}
+
+changesets.bootstrap = function(callback) { // bootstrap
+    if (typeof changesets.model.count != 'undefined') {
+        callback();
+    } else {
+        changesets.getList('tip', blog.model.page_limits, callback);
+    }
+}
+
+changesets.getList = function(start, limit, callback) {
+    changesets.jsonp(start, limit, function(data) {
         changesets.model.count = data.count;
         $(data.changesets).each(function() {
+            this.node = this.node.toUpperCase();
             var tmp = changesets.filterMessage(this.message);
             if (tmp.length == 1) {
-                this.title = this.node.toUpperCase();
+                this.title = this.node;
                 this.content = tmp[0];
             } else {
                 this.title = tmp[0];
                 this.content = $(tmp[1]).html();
             }
-            changesets.model.list[this.node.toUpperCase()] = 
-            changesets.model.list[this.revision] = {
+            changesets.model.list[this.node] = changesets.model.list[this.revision] = {
                 'revision': this.revision,
                 'node': this.node,
                 'title': this.title,
@@ -32,68 +103,24 @@ changesets.getList = function(start, limit) { // model, fetch data
                 'files': this.files
             };
         });
+        callback(start);
     });
 }
 
-changesets.bootstrap = function() { // bootstrap
-    changesets.getList('tip', GLOBAL['pagelimits']);
-}
-
-changesets.openList = function(start, end) { // open list function
-    var _render = function() {
-        changesets.setList(start);
-        changesets.showList();
-        changesets.bindList();
-        
-        changesets.setPagination(start);
-        changesets.showPagination();
-        changesets.bindPagination();
-    }
-
-    var _run = function() {
-        if (start == 'tip') {
-            start = changesets.model.count - 1;
-            end = start - GLOBAL['pagelimits'] + 1;
-        }
-        var need = 0;
-        for (var i = start; need == 0 && i >= end; i--) {
-            if (typeof changesets.model.list[i] == 'undefined') {
-                need = 1;
-            }
-        }
-        
-        if (need) {
-            changesets.getList(start, start - end + 1);
-            GLOBAL['jsonp'].done(_render);
-        } else {
-            _render();
-        }
-    }
-    
-    if (typeof changesets.model.count == 'undefined') {
-        changesets.bootstrap();
-        GLOBAL['jsonp'].done(_run);
-    } else {
-        _run();
-    }
-}
-
-changesets.openChangeset = function(node) { // open single changeset
-    var _run = function() {
-        changesets.setChangeset(node);
-        changesets.showChangeset();
-        changesets.bindChangeset();
-    }
-
-    changesets.getList(node, 1);
-    GLOBAL['jsonp'].done(_run);
+changesets.jsonp = function(start, limit, callback) { // model, fetch data
+    blog.model.jsonp = $.jsonp({
+        url: blog.model.apibase + '/changesets',
+        anchor: '?changeset=page' + '1',
+        data: { 'start': start, 'limit': limit },
+        success: callback
+    });
 }
 
 changesets.setList = function(start) { // controller
     changesets.view.list = [];
     var cnt = 0;
     var index = start;
-    while (index >= 0 && cnt < GLOBAL['pagelimits']) {
+    while (index >= 0 && cnt < blog.model.page_limits) {
         changesets.view.list[cnt] = new Object();
 
         var view = changesets.view.list[cnt]
@@ -129,21 +156,13 @@ changesets.bindList = function() { // bind function
     // bind a link for node anchor
     $('.node').bind('click', function() {
         var index = $(this).prev().text();
-        changesets.setChangeset(index);
-        changesets.showChangeset();
-        changesets.bindChangeset();
-        
-        scroll(0, 0);
-        
-        var controller = [ 'Changeset' ];
-        var anchor = '?changeset=' + index;
-        history.pushState(changesets.getState(controller), $('title').text(), anchor);
+        changesets.openChangeset(index);
     });
 }
 
 changesets.setPagination = function(start) { // controller
-    changesets.view.cntpage = Math.ceil(changesets.model.count / GLOBAL['pagelimits']);
-    changesets.view.curpage = Math.ceil((changesets.model.count - start) / GLOBAL['pagelimits']);
+    changesets.view.cntpage = Math.ceil(changesets.model.count / blog.model.page_limits);
+    changesets.view.curpage = Math.ceil((changesets.model.count - start) / blog.model.page_limits);
 }
 
 changesets.showPagination = function() { // view
@@ -207,22 +226,10 @@ changesets.showChangeset = function() { // view
 changesets.bindChangeset = function() { // bind function
     // bind back anchor back to changesets list
     $('#back').bind('click', function() {
-        var page = Math.floor((changesets.model.count - changesets.view.index - 1) / GLOBAL['pagelimits']);
-        var start = changesets.model.count - page * GLOBAL['pagelimits'] - 1;
-        var end = Math.max(0, start - GLOBAL['pagelimits'] + 1);
+        var page = Math.floor((changesets.model.count - changesets.view.index - 1) / blog.model.page_limits);
+        var start = changesets.model.count - page * blog.model.page_limits - 1;
+        var end = Math.max(0, start - blog.model.page_limits + 1);
         changesets.openList(start, end);
-
-        var _anchor = function() {
-            scroll(0, 0);
-            var controller = [ 'List', 'Pagination' ];
-            var anchor = '?changeset=page' + (page + 1);
-            history.pushState(changesets.getState(controller), $('title').text(), anchor);
-        }
-        if (typeof GLOBAL['jsonp'] != 'undefined') {
-            GLOBAL['jsonp'].done(_anchor);
-        } else {
-            _anchor();
-        }
     });
 
     // bind show file to file list
@@ -231,7 +238,7 @@ changesets.bindChangeset = function() { // bind function
         var pre = parent.find('pre');
         if (pre.length == 0) {
             var file = parent.find('.filename').text();
-            getSource(changesets.view.node, file, function(source) {
+            sources.get(changesets.view.node, file, function(source) {
                 parent.append($('<pre class="prettyprint linenums">').append($('<code>').text(source.data)));
                 prettyPrint();
             });
@@ -259,33 +266,6 @@ changesets.filterMessage = function(message) { // changesets contorller
     }
 }
 
-changesets.turnToPage = function(page) { // controller, for turning pages
-    var _turnToPage = function() {
-        var start = changesets.model.count - (page - 1) * GLOBAL['pagelimits'] - 1;
-        var end = Math.max(0, start - GLOBAL['pagelimits'] + 1);
-        changesets.openList(start, end);
-
-        var _anchor = function() {
-            scroll(0, 0);
-            var controller = [ 'List', 'Pagination' ];
-            var anchor = "?changeset=page" + page;
-            history.pushState(changesets.getState(controller), $('title').text(), anchor);
-        }
-        if (typeof GLOBAL['jsonp'] != 'undefined') {
-            GLOBAL['jsonp'].done(_anchor);
-        } else {
-            _anchor();
-        }
-    }
-
-    if (typeof changesets.model.count == 'undefined') {
-        changesets.bootstrap();
-        GLOBAL['jsonp'].done(_turnToPage);
-    } else {
-        _turnToPage();
-    }
-}
-
 changesets.getState = function(controller) {
     return {
         'entry': 'changesets',
@@ -294,7 +274,7 @@ changesets.getState = function(controller) {
     };
 }
 
-changesets.setState = function(controller, view) {
+changesets.setState = function(view, controller) {
     changesets.view = view;
     
     $(controller).each(function() {
@@ -303,3 +283,7 @@ changesets.setState = function(controller, view) {
     });
 }
 
+changesets.setAnchor = function(controller, anchor) {
+    scroll(0, 0);
+    history.pushState(changesets.getState(controller), $('title').text(), anchor);
+}

@@ -1,133 +1,309 @@
-function getSourcesList(changeset, path) {
-    GLOBAL['jsonp'] = $.jsonp({
-        url: GLOBAL['apibase'] + '/src/' + changeset + '/' + path,
+var sources = {
+    'model': {
+        'node': { 'path': '' },
+        'tip': 'tip'
+    },
+    'view': {}
+};
+
+sources.open = function(node, path) { // open function
+    if (node == 'tip') {
+        node = sources.model.tip;
+    }
+    if (typeof path == 'undefined') {
+        path = '';
+    }
+    sources.get(node, path, function(pt) {
+        if (pt.type == 'folder') {
+            sources.setList(pt);
+            sources.showList();
+            sources.bindList();
+        } else if (pt.type == 'file') {
+            sources.setList(pt.parent);
+            sources.showList();
+
+            sources.setFile(pt);
+            sources.showFile();
+            sources.bindFile();
+        }
+        sources.setAnchor();
+    });
+}
+
+sources.get = function(node, path, callback) { // model function, encapsulate everything about jsonp
+    var pt = sources.travel(node, path);
+    if (pt != 'undefined' && pt.full) {
+        callback(pt);
+    } else {
+        // cross-domain communication now
+        sources.jsonp(node, path, function(data) {
+            data.node = data.node.toUpperCase();
+            if (node == 'tip') {
+                sources.model.tip = data.node.toUpperCase();
+            }
+            if (data.path.charAt(0) == '/') { // folder
+                var pt = sources.createFolder(data);
+                callback(pt);
+            } else { // file
+                var tmp = data.path.split('/');
+                var file = tmp[ tmp.length - 1 ];
+                var path = '';
+                for (var i = 0; i < tmp.length - 1; i++) {
+                    path = path + '/' + tmp[i];
+                }
+                sources.jsonp(data.node, path, function(folder) {
+                    var pt = sources.createFolder(folder);
+                    pt[file].data = data.data;
+                    callback(pt[file]);
+                });
+            }
+        });
+    }
+}
+
+sources.createFolder = function(data) { // model function, create model nodes
+    var pt = sources.travel(data.node, data.path, 'create');
+    $(data.directories).each(function() {
+        if (typeof pt[this] == 'undefined') {
+            pt[this] = [];
+            pt[this].type = 'folder';
+            pt[this].path = '/' + data.node + data.path + this;
+            pt[this].parent = pt;
+        }
+    });
+    $(data.files).each(function() {
+        var tmp = this.path.split('/');
+        var file = tmp[ tmp.length - 1 ];
+        if (typeof pt[file] == 'undefined') {
+            if (typeof pt[file] == 'undefined') {
+                pt[file] = [];
+                pt[file].type = 'file';
+                pt[file].path = '/' + data.node + '/' + this.path;
+                pt[file].revision = this.revision.toUpperCase();
+                pt[file].size = this.size;
+                pt[file].timestamp = this.timestamp;
+                pt[file].parent = pt;
+            }
+        }
+    });
+    return pt;
+}
+
+sources.travel = function(node, path, mode) { // model function, travel the file tree
+    var paths = path.split('/');
+    while (paths.length > 1 && paths[ paths.length - 1 ] == '') {
+        paths.pop();
+    };
+    paths[0] = node;
+    q = 0;
+    var p = sources.model.node;
+    while (q < paths.length) {
+        if (typeof p[ paths[q] ] == 'undefined') {
+            if (mode == 'create') {
+                p[ paths[q] ] = [];
+                p[ paths[q] ].type = 'folder';
+                p[ paths[q] ].path = p.path + '/' + paths[q];
+                p[ paths[q] ].full = false;
+                p[ paths[q] ].parent = p;
+            } else {
+                return 'undefined';
+            }
+        }
+        p = p[ paths[q] ];
+        q++;
+    }
+    if (mode == 'create') {
+        p.full = true;
+    }
+    return p;
+}
+
+sources.jsonp = function(node, path, callback) { // model, for connect jsonp
+    blog.model.jsonp = $.jsonp({
+        url: blog.model.apibase + '/src/' + node + '/' + path,
         anchor: '?source=' + path,
-        success: function(data) {
-            data.directories.sort();
-            data.files.sort(function(a, b) {
-                return a.path < b.path ? -1 : +1;
-            });
-            GLOBAL['sourceslist'] = data;
-            showSourcesList();
+        success: callback
+    });
+}
+
+sources.setList = function(pt) { // set view function
+    var paths = pt.path.split('/');
+    sources.view = {};
+    sources.view.node = paths[1];
+    sources.view.path = [];
+    sources.view.path.push('root');
+    for (var i = 2; i < paths.length; i++) {
+        sources.view.path.push(paths[i]);
+    }
+    // store list object into tmp array, then sort it
+    var tmp = [];
+    for (var key in pt) {
+        if ((pt[key].type == 'folder' || pt[key].type == 'file') && key != 'parent') {
+            tmp.push([ key, pt[key] ]);
+        }
+    }
+    tmp.sort(function(a, b) {
+        if (a[1].type != b[1].type) {
+            return (a[1].type == 'folder') ? -1 : +1;
+        } else {
+            return (a[0] < b[0]) ? -1 : +1;
+        }
+    });
+    // transform list object from tmp array to view list
+    sources.view.list = [];
+    $(tmp).each(function() {
+        sources.view.list[ this[0] ] = [];
+        sources.view.list[ this[0] ].type = this[1].type;
+        if (this[1].type == 'file') {
+            sources.view.list[ this[0] ].size = this[1].size;
+            sources.view.list[ this[0] ].timestamp = this[1].timestamp;
+            sources.view.list[ this[0] ].revision = this[1].revision;
         }
     });
 }
 
-function getSource(changeset, file, callback) {
-    GLOBAL['jsonp'] = $.jsonp({
-        url: GLOBAL['apibase'] + '/src/' + changeset + '/' + file,
-        anchor: '?source=' + file,
-        success: function(data) {
-            callback(data);
-        }
-    });
-}
-
-function showSourcesList() {
+sources.showList = function() { // show view function
     // clear the content DOM
-    $('#content').empty().attr({ class: 'sources' });
+    $('#content').empty().addClass('sources');
 
     // append path nevigation bar
-    var div = $('<div>').attr({ class: 'path' });
-    $('#content').append(div);
-    var path = new Array('root').concat(GLOBAL['sourceslist'].path.split('/'));
-    $(path).each(function() {
-        if (this != '') {
-            div.append('/').append($('<a>')
-                .attr({ class: 'source', href: 'javascript:void(0);' })
-                .text(this)
-                )
-        }
+    var path = $('<div class="path">').appendTo($('#content'));
+    $(sources.view.path).each(function() {
+        path.append('/').append($('<a class="paths" href="javascript:void(0);">').text(this));
     });
 
     // append table header
-    var table = $('<table>');
-    $('#content').append(table);
-    $('#content').append($('<div>').attr({ id: 'code' }));
-    table.append($('<tr>')
-            .append($('<th>').text('filename'))
-            .append($('<th>').text('size'))
-            .append($('<th>').text('Last Modified'))
-            );
+    var table = $('<table>')
+        .append($('<tr>')
+                .append($('<th>').text('filename'))
+                .append($('<th>').text('size'))
+                .append($('<th>').text('Last Modified')))
+        .appendTo($('#content'));
+
+    // append code view frame
+    $('#content').append($('<div id="code">'));
 
     // append folders infomation to table
-    $(GLOBAL['sourceslist'].directories).each(function() {
-        table.append($('<tr>')
-            .append($('<td>')
-                .attr({ class: 'folder' })
-                .html($('<a>')
-                    .attr({ class: 'source', href: 'javascript:void(0);' })
-                    .text(this)
-                    )
-                )
-            .append($('<td>'))
-            .append($('<td>'))
-            );
-    });
+    for (var key in sources.view.list) {
+        var value = sources.view.list[key];
+        if (value.type == 'folder') {
+            table.append($('<tr>')
+                .append($('<td>').append($('<a class="folder" href="javascript:void(0);">').text(key)))
+                .append($('<td>'))
+                .append($('<td>')));
+        }
+    }
 
     // append files infomation to table
-    $(GLOBAL['sourceslist'].files).each(function() {
-        var filename = this.path.split('/');
-        table.append($('<tr>')
-            .append($('<td>').append($('<a>')
-                    .attr({ href: 'javascript:void(0);', class: 'show-file' })
-                    .text(filename[filename.length - 1])
-                ))
-            .append($('<td>').text(this.size + 'B'))
-            .append($('<td>').text(this.timestamp))
-            );
-    });
+    for (var key in sources.view.list) {
+        var value = sources.view.list[key];
+        if (value.type == 'file') {
+            table.append($('<tr>')
+                .append($('<td>').append($('<a class="file" href="javascript:void(0);">').text(key)))
+                .append($('<td>').text(value.size + 'B'))
+                .append($('<td>').append(value.timestamp).append(' at ')
+                        .append($('<a class="changeset" href="javascript:void(0);">').text(value.revision)))
+                );
+        }
+    }
+}
 
+sources.bindList = function() {
     // bind click action to path navigation bar
-    $('.source').bind('click', function() {
-        var url = '';
-        if ($(this).parent().is('td')) {
-            url = GLOBAL['sourceslist'].path + this.text;
-        } else if (this.text != 'root') { // when click root, path is empty!
-            $.each($(this).prevAll('a'), function() {
+    $('.paths').bind('click', function() {
+        var path = '/';
+        if (this.text != 'root') { // when click root, path is empty!
+            $(this).prevAll('a').each(function() {
                 if (this.text != 'root') {
-                    url = '/' + this.text + url;
+                    path = '/' + this.text + path;
                 }
             });
-            url = url + '/' + this.text;
+            path = path + this.text;
         }
-        getSourcesList(GLOBAL['sourceslist'].node, url);
+        sources.open(sources.view.node, path);
     });
 
-    // bind show file source code when click filename
-    $('.show-file').bind('click', function() {
-        var file = GLOBAL['sourceslist'].path + this.text;
-        showSource(file);
+    // show clicked anchor
+    var _show = function(text) {
+        var path = '/';
+        for (var i = 1; i < sources.view.path.length; i++) {
+            path = path + sources.view.path[i] + '/';
+        }
+        path = path + text;
+        sources.open(sources.view.node, path);
+    }
+
+    // bind click action to folders anchors
+    $('.folder').bind('click', function() {
+        _show(this.text);
+    });
+
+    // bind click action to files anchors
+    $('.file').bind('click', function() {
+        _show(this.text);
     });
 }
 
-function showSource(file) {
+sources.setFile = function(pt) {
+    sources.view.file = [];
+    sources.view.file.data = pt.data;
+    sources.view.file.path = pt.path;
+}
+
+sources.showFile = function() {
     // show source with overlay
-    getSource(GLOBAL['sourceslist'].node, file, function(source) {
-        $('body').append($('<div id="overlay">'));
-        if (file.search(".html") == -1) {
-            $('#code').empty()
-            .append($('<pre>')
-                .attr({ class: 'prettyprint linenums' })
-                .append($('<code>')
-                    .attr({ class: 'language-cpp' })
-                    .text(source.data)
-                    )
-                );
+    $('body').append($('<div id="overlay">'));
 
-            // pretty the code with google code prettify
-            prettyPrint();
+    // show source code or html page
+    var file = sources.view.file;
+    if (file.path.search(".html") == -1) {
+        $('#code').empty().append($('<pre class="prettyprint linenums">')
+                .append($('<code>').text(file.data)));
+        prettyPrint(); // pretty the code with google code prettify
+    } else {
+        $('#code').append($('<div id="webpage">').html($(file.data)));
+    }
+}
 
-        } else {
-            var content = $(source.data);
-            $("#code").append($("<div id='webpage'>").html(content));
-        }
-
-        // bind click action to overlay
-        $('#overlay').bind('click', function() {
-            $('#code').empty();
-            $('#overlay').remove();
-            history.pushState(getState(), $('title').text(), '?source=' + GLOBAL['sourceslist'].path);
-        });
+sources.bindFile = function() {
+    // bind click action to overlay
+    $('#overlay').bind('click', function() {
+        $('#code').empty();
+        $('#overlay').remove();
+        delete sources.view.file;
+        sources.bindList();
+        sources.setAnchor();
     });
 }
+
+sources.getState = function() {
+    return {
+        'entry': 'sources',
+        'view': sources.view
+    };
+}
+
+sources.setState = function(view, controller) {
+    $('#overlay').remove();
+    sources.view = view;
+    sources.showList();
+    sources.bindList();
+    if (typeof view.file != 'undefined') { // file
+        sources.showFile();
+        sources.bindFile();
+    }
+}
+
+sources.setAnchor = function() {
+    if (typeof sources.view.file != 'undefined') {
+        var anchor = sources.view.file.path.substr(13);
+    } else {
+        var anchor = '/';
+        for (var i = 1; i < sources.view.path.length; i++) {
+            anchor = anchor + sources.view.path[i] + '/';
+        }
+    }
+    anchor = '?source=' + anchor;
+    history.pushState(sources.getState(), $('title').text(), anchor);
+}
+

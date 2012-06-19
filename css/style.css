@@ -158,10 +158,9 @@ a:hover {
     margin: 0.2em auto auto auto;
 }
 
-.changeset ul li span.status {
+.changeset ul li a.status {
     margin-left: 0.6em;
     font-size: 0.8em;
-    text-decoration: underline;
 }
 
 .sources > .path {
@@ -173,6 +172,14 @@ a:hover {
 
 .sources > table {
     width: 100%;
+}
+
+.sources > table tr th:first-child {
+    width: 30%;
+}
+
+.sources > table tr th:last-child {
+    width: 50%;
 }
 
 .sources > table tr th {
