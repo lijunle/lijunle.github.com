@@ -53,7 +53,6 @@ sources.get = function(node, path, callback, bootstrap) { // model function, enc
                     data.path = data.path + '/' + tmp[i];
                 }
                 if (typeof bootstrap != 'undefined' && bootstrap) {
-                    console.log('case1');
                     sources.jsonp(data.node, data.path, function(folder) {
                         folder.node = folder.node.toUpperCase();
                         var pt = sources.createFolder(folder);
@@ -61,7 +60,6 @@ sources.get = function(node, path, callback, bootstrap) { // model function, enc
                         callback(pt[file]);
                     });
                 } else {
-                    console.log('case2');
                     var pt = sources.createFolder(data);
                     sources.createFile(data, file, data, pt);
                     pt[file].data = data.data;
@@ -289,6 +287,7 @@ sources.showFile = function() {
     } else {
         $('#code').append($('<div id="webpage">').html($(file.data)));
     }
+    scroll(0, 0);
 }
 
 sources.bindFile = function() {
@@ -309,14 +308,15 @@ sources.getState = function() {
     };
 }
 
-sources.setState = function(view, controller) {
+sources.setState = function(view) {
     $('#overlay').remove();
     sources.view = view;
     sources.slideList({
         'before': sources.showList,
         'after': function() {
-            sources.bindList();
-            if (typeof view.file != 'undefined') { // file
+            if (typeof view.file == 'undefined') { // folder
+                sources.bindList();
+            } else { // file
                 sources.showFile();
                 sources.bindFile();
             }

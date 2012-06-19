@@ -41,7 +41,7 @@ hint.setup = function() {
 
     window.onpopstate = function(event) {
         if (event.state != null) {
-            eval(event.state.entry).setState(event.state.view, event.state.controller);
+            eval(event.state.entry).setState(event.state.view);
         }
     }
 }
