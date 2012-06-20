@@ -69,17 +69,14 @@ is `250`.
 
 ## License
 
-Copyright 2012 JunLe Li &lt;[lijunle@gmail.com]&gt;.
+Copyright 2012 [JunLe Li].
 
-The source code of this blog is under **MIT License**. Read more about
-it in the `LICENSE.txt` file.
-
-[lijunle@gmail.com]: mailto:lijunle@gmail.com
+Released under **MIT License**.
+Read more about in the `LICENSE.txt` file.
 
 ## About me
 
-I am [JunLe Li][], you can follow me in [SinaWeibo][] or
-[Twitter][].
+I am [JunLe Li][], you can follow me in [SinaWeibo][] or [Twitter][].
 
 [JunLe Li]: mailto:lijunle@gmail.com
 [SinaWeibo]: http://www.weibo.com/lijunle
