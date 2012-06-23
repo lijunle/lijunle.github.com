@@ -48,10 +48,9 @@ changesets.openChangeset = function(start) { // open single changeset
         changesets.slide({
             'before': changesets.showChangeset,
             'after': function() {
-                changesets.bindChangeset();
-
                 var anchor = '?changeset=' + changesets.view.index;
                 changesets.setAnchor(anchor);
+                changesets.bindChangeset();
             }
         });
     });
@@ -297,12 +296,24 @@ changesets.bindChangeset = function() { // bind function
     });
 
     // show disqus comments
-    /*var disqus_shortname = 'lijunle-bitbucket';
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();*/
+    // TODO: when Disqus 2012 provide DISQUS.reset function, turn on 2012 on dashboard
+    if (typeof window.disqus_shortname == 'undefined') { // first load
+        (function() {
+            window.disqus_shortname = 'lijunle-bitbucket';
+            window.disqus_identifier = 'changeset=' + changesets.view.index;
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    } else { // second load, using reset function.
+        DISQUS.reset({
+            reload: true,
+            config: function () {
+                this.page.identifier = 'changeset=' + changesets.view.index;
+                this.page.url = window.location.href;
+            }
+        });
+    }
 }
 
 changesets.filterMessage = function(message) { // changesets contorller 

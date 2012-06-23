@@ -232,3 +232,9 @@ pre {
 #webpage pre {
     border: none;
 }
+
+#disqus_thread {
+    margin: 0.75em;
+    padding: 0.2em 1em 0.8em;
+    background-color: #F6F6F6;
+}
