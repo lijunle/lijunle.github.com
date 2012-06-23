@@ -7,7 +7,7 @@
     "contact_me": "http://weibo.com/lijunle",
     "footer": "<span>power by <a href=\"https://bitbucket.org/lijunle/lijunle.bitbucket.org\" target=\"_blank\">LiJunLe</a> and his <a href=\"https://bitbucket.org/lijunle/acm\" target=\"_blank\">code</a>.</span>",
 
-    "timeout": "7000",
+    "timeout": "15000",
     "page_limits": 15,
     "slide_time": 250
 }
