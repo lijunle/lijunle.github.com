@@ -10,7 +10,7 @@ var blog = {
          * timeout:     the jsonp request will be abort automatically if no respone is
          *              received in this specified time. unit: millisecond
          * page_limits: how many changesets will be shown on one page
-         * slide_time:  the time for the sliding animation, default is 250. unit: millisecond
+         * slide_time:  the time for the sliding animation. unit: millisecond
          * 
          */
     }

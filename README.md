@@ -58,7 +58,7 @@ The snippet is shown at the footer of every page.
 
 + `timeout`  
 If the time of a request pass is larger the this value, the request
-will be aborted. Unit: `millisecond`. Default is `10000`.
+will be aborted. Unit: `millisecond`. Default is `7000`.
 
 + `page_limits`  
 The number of posts shown on one single page. Default is `15`.
