@@ -44,7 +44,6 @@ sources.open = function(node, path, bootstrap) { // open function
         path = '';
     }
     sources.get(node, path, function(pt) {
-        console.log(sources.model);
         if (pt.type == 'folder') {
             sources.setList(pt);
             sources.slideList({
@@ -221,15 +220,12 @@ sources.showList = function() {
     });
 
     // append table header
-    var table = $('<table>')
+    var table = $('<table id="codelist">')
         .append($('<tr>')
                 .append($('<th>').text('filename'))
                 .append($('<th>').text('size'))
                 .append($('<th>').text('Last Modified')))
         .appendTo($('#content'));
-
-    // append code view frame
-    $('#content').append($('<div id="code">'));
 
     // append folders and files infomation to table
     $(sources.view.list).each(function() {
@@ -248,6 +244,9 @@ sources.showList = function() {
                 );
         }
     });
+    
+    // append code view frame
+    $('#content').append($('<div id="code">'));
 }
 
 sources.slideList = function(callback) { // show view function
@@ -296,6 +295,11 @@ sources.bindList = function() {
             path = path + this.text;
         }
         sources.open(sources.view.node, path);
+    });
+    
+    // bind click action on changeset node
+    $('#codelist .changeset').bind('click', function() {
+        changesets.openChangeset(this.text);
     });
 }
 

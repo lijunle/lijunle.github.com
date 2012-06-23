@@ -4,7 +4,7 @@ var changesets = {
          * count:   the total number of changesets in the repostory
          *
          * list:    the list of changesets
-         *      key:    revison/hex value, reference to every single changeset
+         *      key:    revison value, reference to every single changeset
          *      value:  content:    changeset comment, for displaying as blog content
          *              files:      changed files list in the specified changeset
          *              node:       changeset node hex value (hex)
@@ -14,8 +14,12 @@ var changesets = {
          *                          the head will be title in the changeset comment,
          *                          otherwise it is the node hex value
          *
+         * hex:     transform changeset node hex value into revision decimal value
+         *      key:    the changeset node hex value
+         *      value:  the corresponding changeset revision decimal value
          */
-        'list': { }
+        'list': {},
+        'hex': {}
     },
     'view': {}
 };
@@ -62,6 +66,22 @@ changesets.turnToPage = function(page) { // controller, for turning pages
 }
 
 changesets.get = function(start, end, callback) {
+    if (start.length == 12) { // that is hex value
+        if (typeof changesets.model.hex[start] != 'undefined') {
+            start = changesets.model.hex[start];
+            changesets.getByRevision(start, start, callback);
+        } else { // transform hex value to revision value
+            changesets.getList(start, 1, function() {
+                start = changesets.model.hex[start];
+                changesets.getByRevision(start, start, callback);
+            });
+        }
+    } else {
+        changesets.getByRevision(start, end, callback);
+    }
+}
+
+changesets.getByRevision = function(start, end, callback) {
     changesets.bootstrap(function() {
         if (start == 'tip') {
             start = changesets.model.count - 1;
@@ -102,7 +122,8 @@ changesets.getList = function(start, limit, callback) {
                 this.title = tmp[0];
                 this.content = $(tmp[1]).html();
             }
-            changesets.model.list[this.node] = changesets.model.list[this.revision] = {
+            changesets.model.hex[this.node] = this.revision;
+            changesets.model.list[this.revision] = {
                 'revision': this.revision,
                 'node': this.node,
                 'title': this.title,
@@ -245,6 +266,8 @@ changesets.showChangeset = function(callback) { // view
             anchor.addClass('show-file').attr({ 'href': 'javascript:void(0);' }).text('#');
         }
     });
+    // append div for disqus comment system
+    $('#content').append($('<div id="disqus_thread">'));
 }
 
 changesets.bindChangeset = function() { // bind function
@@ -272,6 +295,14 @@ changesets.bindChangeset = function() { // bind function
             pre.show();
         }
     });
+
+    // show disqus comments
+    /*var disqus_shortname = 'lijunle-bitbucket';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();*/
 }
 
 changesets.filterMessage = function(message) { // changesets contorller 
