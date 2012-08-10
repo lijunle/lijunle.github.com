@@ -321,7 +321,7 @@ changesets.filterMessage = function(message) { // changesets contorller
     // return array of title and content
     var converter = new Markdown.Converter();
     var content = $('<div>').html(converter.makeHtml(message));
-    if (message.search('SCNU_2012_Summer #1') != -1) { //FIXME: hack post #104
+    if (message.search('SCNU_2012_Summer #1\n') != -1) { //FIXME: hack post #104
         var html = content.html();
         html = html.replace(/<h2>/g, '<h_1>').replace(/<h1>/g, '<h2>').replace(/<h_1>/g, '<h1>');
         content.html(html);
