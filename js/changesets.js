@@ -296,7 +296,6 @@ changesets.bindChangeset = function() { // bind function
     });
 
     // show disqus comments
-    // TODO: when Disqus 2012 provide DISQUS.reset function, turn on 2012 on dashboard
     if (typeof window.disqus_shortname == 'undefined') { // first load
         (function() {
             window.disqus_shortname = 'lijunle-bitbucket';
