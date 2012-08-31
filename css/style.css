@@ -181,6 +181,11 @@ a.anchor {
     font-size: 0.8em;
 }
 
+.inline-code {
+    font-size: 0.75em;
+    vertical-align: super;
+}
+
 #show-disqus {
     text-align: center;
     display: block;
@@ -231,7 +236,7 @@ a.anchor {
     border-bottom: medium solid black;
 }
 
-.sources #code {
+#content #code {
     z-index: 5;
     position: absolute;
     background: #FFFFFF;

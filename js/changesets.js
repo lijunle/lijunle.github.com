@@ -21,7 +21,8 @@ var changesets = {
         'list': {},
         'hex': {}
     },
-    'view': {}
+    'view': {},
+    'converter': null
 };
 
 changesets.openList = function(start, end) { // open list function
@@ -244,14 +245,19 @@ changesets.setChangeset = function(index) { // controller
 changesets.showChangeset = function(callback) { // view
     // show the specified changeset information to content
     $('#content').empty().removeClass().addClass('changeset');
+
     // append back anchor
     $('#content').append($('<a id="back" href="javascript:void(0);">').text('Back to list'));
+
     // append title
     $('#content').append($('<h1 class="title">').text(changesets.view.title));
+
     // append subtitle for showing time
     $('#content').append($('<h4 class="subtitle">').text(changesets.view.timestamp));
+
     // append paragraph content
     $('#content').append($('<p class="paragraph">').html(changesets.view.content));
+
     // append files list
     var fileslist = $('<div>').append($('<span class="list-head">').text('Changed Files:')).appendTo($('#content'));
     var list = $('<ul>').appendTo(fileslist);
@@ -265,6 +271,10 @@ changesets.showChangeset = function(callback) { // view
             anchor.addClass('show-file').attr({ 'href': 'javascript:void(0);' }).text('#');
         }
     });
+
+    // append code view frame
+    $('#content').append($('<div id="code">'));
+
     // append div for disqus comment system
     $('#content').append($('<a id="show-disqus">').attr({ 'href': 'javascript:void(0);' }).text('Show Disqus Comments'));
 }
@@ -278,23 +288,18 @@ changesets.bindChangeset = function() { // bind function
         changesets.openList(start, end);
     });
 
-    // bind show file to file list
-    $('.show-file').bind('click', function() {
-        var parent = $(this).parents('.changeset ul li');
-        var pre = parent.find('pre');
-        if (pre.length == 0) {
-            var file = parent.find('.filename').text();
-            sources.get(changesets.view.node, file, function(source) {
-                parent.append($('<pre class="prettyprint linenums">').append($('<code>').text(source.data)));
-                prettyPrint();
-            });
-        } else if (pre.is(':visible')) {
-            pre.hide();
-        } else {
-            pre.show();
-        }
+    // bind show inline code frame
+    $('.inline-code').bind('click', function() {
+        changesets.showCode(changesets.view.node, this.title);
     });
 
+    // bind show file to file list
+    $('.show-file').bind('click', function() {
+        var file = $(this).parents('.changeset ul li').find('.filename').text();
+        changesets.showCode(changesets.view.node, file);
+    });
+
+    // bind show disqus comment system
     $('#show-disqus').bind('click', function() {
         $('#show-disqus').remove();
         // show disqus comments
@@ -302,12 +307,10 @@ changesets.bindChangeset = function() { // bind function
         if (typeof window.disqus_shortname == 'undefined') { // first load
             window.disqus_shortname = 'lijunle-bitbucket';
             window.disqus_identifier = 'changeset=' + changesets.view.index;
-            disqus_developer = 1; //FIXME
             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
         } else { // second load, using reset function.
-            console.log("second load");
             DISQUS.reset({
                 reload: true,
                 config: function () {
@@ -319,16 +322,37 @@ changesets.bindChangeset = function() { // bind function
     });
 }
 
+changesets.showCode = function(node, file) {
+    sources.get(node, file, function(source) {
+        sources.setFile(source);
+        sources.showFile();
+        $('#overlay').bind('click', function() {
+            $('#code').empty();
+            $('#overlay').remove();
+            delete sources.view.file;
+        });
+    });
+}
+
 changesets.filterMessage = function(message) { // changesets contorller 
-    // judge message is markdown syntax or not
-    // return array of title and content
-    var converter = new Markdown.Converter();
-    var content = $('<div>').html(converter.makeHtml(message));
+    // judge message is markdown syntax or not, return array of title and content
+    if (changesets.converter == null) {
+        changesets.converter = new Markdown.Converter();
+    }
+    var content = $('<div>').html(changesets.converter.makeHtml(message));
+
+    // FIXME: for hack posts, should use another module to do it.
     if (message.search('SCNU_2012_Summer #1\n') != -1) { //FIXME: hack post #104
         var html = content.html();
         html = html.replace(/<h2>/g, '<h_1>').replace(/<h1>/g, '<h2>').replace(/<h_1>/g, '<h1>');
         content.html(html);
     }
+
+    // replace the [file:...] syntax as anchors
+    var patt = /\[+file:([^\]]*)\]+/gi;
+    content.html(content.html().replace(patt, '<a class="inline-code" title="$1" href="javascript:void(0);">#</a>'));
+
+    // use markdown syntax, or plain text
     if ($(content).children('h1').length != 0) {
         // that is markdown syntax
         var title = $(content).children('h1').text();
