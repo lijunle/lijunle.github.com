@@ -266,7 +266,7 @@ changesets.showChangeset = function(callback) { // view
         }
     });
     // append div for disqus comment system
-    $('#content').append($('<div id="disqus_thread">'));
+    $('#content').append($('<a id="show-disqus">').attr({ 'href': 'javascript:void(0);' }).text('Show Disqus Comments'));
 }
 
 changesets.bindChangeset = function() { // bind function
@@ -295,24 +295,28 @@ changesets.bindChangeset = function() { // bind function
         }
     });
 
-    // show disqus comments
-    if (typeof window.disqus_shortname == 'undefined') { // first load
-        (function() {
+    $('#show-disqus').bind('click', function() {
+        $('#show-disqus').remove();
+        // show disqus comments
+        $('#content').append($('<div id="disqus_thread">'));
+        if (typeof window.disqus_shortname == 'undefined') { // first load
             window.disqus_shortname = 'lijunle-bitbucket';
             window.disqus_identifier = 'changeset=' + changesets.view.index;
+            disqus_developer = 1; //FIXME
             var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
             dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-        })();
-    } else { // second load, using reset function.
-        DISQUS.reset({
-            reload: true,
-            config: function () {
-                this.page.identifier = 'changeset=' + changesets.view.index;
-                this.page.url = window.location.href;
-            }
-        });
-    }
+        } else { // second load, using reset function.
+            console.log("second load");
+            DISQUS.reset({
+                reload: true,
+                config: function () {
+                    this.page.identifier = 'changeset=' + changesets.view.index;
+                    this.page.url = window.location.href;
+                }
+            });
+        }
+    });
 }
 
 changesets.filterMessage = function(message) { // changesets contorller 

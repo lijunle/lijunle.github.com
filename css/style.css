@@ -181,6 +181,19 @@ a.anchor {
     font-size: 0.8em;
 }
 
+#show-disqus {
+    text-align: center;
+    display: block;
+}
+
+#show-disqus:before {
+    content: '[ ';
+}
+
+#show-disqus:after {
+    content: ' ]';
+}
+
 .sources > .path {
     display: block;
     margin: 1.2em auto 1.2em 1em;
