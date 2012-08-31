@@ -247,7 +247,7 @@ changesets.showChangeset = function(callback) { // view
     // append back anchor
     $('#content').append($('<a id="back" href="javascript:void(0);">').text('Back to list'));
     // append title
-    $('#content').append($('<h2 class="title">').text(changesets.view.title));
+    $('#content').append($('<h1 class="title">').text(changesets.view.title));
     // append subtitle for showing time
     $('#content').append($('<h4 class="subtitle">').text(changesets.view.timestamp));
     // append paragraph content
