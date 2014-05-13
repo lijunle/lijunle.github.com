@@ -1,0 +1,276 @@
+body {
+    font-family: Helvetica, arial, sans-serif;
+    width: 960px;
+    margin: 0 auto;
+    overflow-y:scroll;
+}
+
+p {
+    margin: 0;
+}
+
+a {
+    color: #4183C4;
+}
+
+a:hover {
+    color: orange;
+}
+
+a.anchor {
+    display: block;
+    padding-left: 30px;
+    margin-left: -30px;
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+}
+
+#header > h1 {
+    font-size: 2.4em;
+    letter-spacing: 0.01em;
+    text-align: center;
+    padding: 0.2em;
+    margin: 0.1em auto 0;
+}
+
+#menu {
+    border-style: dotted;
+    border-width: thin;
+    border-radius: 0.4em;
+}
+
+#menu > a {
+    text-align: center;
+    font-size: 1.1em;
+    display: inline-block;
+    width: 50%;
+    margin: 0.3em auto 0.4em;
+}
+
+#menu > a:hover {
+}
+
+#hint > span {
+    position: fixed;
+    z-index: 10;
+    bottom: 0;
+    right: 8%;
+    min-width: 8.5em;
+    padding: 0.5em;
+    border: solid thin;
+    border-bottom: none; 
+    background: #F0F0F0;
+}
+
+#hint #stop {
+    float: right;
+    
+}
+
+#footer {
+    margin: 3em 0em 1.3em;
+    font-size: 0.8em;
+    text-align: right;
+}
+
+.changesetslist > .changeset {
+    margin: 1.3em 1em;
+}
+
+.changesetslist > .changeset p {
+    margin: 0.3em auto;
+}
+
+.changesetslist > .changeset > .paragraph ul {
+    margin: 0.3em auto auto 0em;
+    padding: 0px 0px 0px 1em;
+}
+
+.changesetslist > .changeset > .paragraph ol {
+    margin: 0.3em auto auto 0em;
+    padding: 0px 0px 0px 1.5em;
+}
+
+.changesetslist > .changeset .index {
+    font-size: 1.0em;
+    font-family: monospace, sans-serif;
+    vertical-align: text-bottom;
+}
+
+.changesetslist > .changeset .index:after {
+    content: '\' '
+}
+
+.changesetslist > .changeset .node {
+    /*color: black;*/
+    font-weight: bold;
+    font-size: 2.0em;
+    font-family: serif;
+    letter-spacing: 0.04em;
+}
+
+.changesetslist > .changeset .paragraph {
+    padding-left: 1em;
+    border-left: 0.2em solid #CACACA;
+}
+
+.pagination {
+    margin: 2em 0em 1.5em 1.3em;
+}
+
+.pagination a {
+    margin: 0 0.4em;
+    border: 1px dashed #8D8D8D;
+    padding: 0.25em 0.45em;
+}
+
+.pagination a.curpage {
+    border: 1px solid #8D8D8D;
+    font-weight: bold;
+}
+
+.pagination a.lnkpage:hover {
+    background: #F0F0F0;
+}
+
+.changeset > #back {
+    display: block;
+    margin: 1.3em;
+}
+
+.changeset > #back:before {
+    content: '<< ';
+}
+
+.changeset > h1.title {
+    letter-spacing: 0.01em;
+    text-align: center;
+    margin-bottom: 0.3em;
+}
+
+.changeset > h4.subtitle {
+    text-align: center;
+    font-size: 0.8em;
+    font-weight: normal;
+    margin-top: 0.3em;
+}
+
+.changeset > .paragraph {
+    padding-left: 2em;
+    margin: 2em 0em 1.5em;
+}
+
+.changeset .list-head {
+    padding-left: 3em;
+}
+
+.changeset ul {
+    margin: 0.8em auto 2em 0.7em;
+}
+
+.changeset ul li {
+    font-family: monospace, sans-serif;
+    margin: 0.2em auto auto auto;
+}
+
+.changeset ul li a.status {
+    margin-left: 0.6em;
+    font-size: 0.8em;
+}
+
+.inline-code {
+    font-size: 0.75em;
+    vertical-align: super;
+}
+
+#show-disqus {
+    text-align: center;
+    display: block;
+}
+
+#show-disqus:before {
+    content: '[ ';
+}
+
+#show-disqus:after {
+    content: ' ]';
+}
+
+.sources > .path {
+    display: block;
+    margin: 1.2em auto 1.2em 1em;
+    font-family: monospace, sans-serif;
+    font-size: 1.1em;
+}
+
+.sources > table {
+    width: 100%;
+}
+
+.sources > table tr th:first-child {
+    width: 30%;
+}
+
+.sources > table tr th:last-child {
+    width: 50%;
+}
+
+.sources > table tr th {
+    border-top: medium solid black;
+    border-bottom: medium solid black;
+}
+
+.sources > table tr td {
+    font-family: monospace, sans-serif;
+    border-bottom: 0.15em solid #ECECEC;
+}
+
+.sources > table tr:nth-child(even) {
+    background: #F9F9F9;
+}
+
+.sources > table tr:last-child td {
+    border-bottom: medium solid black;
+}
+
+#content #code {
+    z-index: 5;
+    position: absolute;
+    background: #FFFFFF;
+    top: 60px;
+    left: 10%;
+    width: 80%;
+}
+
+pre {
+    margin: 0em;
+    border: thin solid black;
+}
+
+#overlay {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    opacity: 0.5;
+    z-index: 3;
+}
+
+#webpage {
+    margin: 1em;
+}
+
+#webpage pre {
+    border: none;
+}
+
+#disqus_thread {
+    margin: 0.75em;
+    padding: 0.2em 1em 0.8em;
+    background-color: #F6F6F6;
+}
