@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html ng-app="app">
+    <head>
+        <meta charset="utf-8" />
+        <title>Bitbucket Page</title>
+        <link rel="stylesheet" href="css/style.css" />
+        <script src="assets/angular/angular.js"></script>
+        <script src="assets/angular-route/angular-route.js"></script>
+        <script src="js/app.js"></script>
+        <script src="js/controllers.js"></script>
+    </head>
+    <body>
+        <div id="header" ng-controller="layout">
+            <h1>{{title}}</h1>
+        </div>
+        <div id="menu">
+            <a id="changesets" href="#/changeset">Changesets</a>
+            <a id="sources" href="#/source">Sources</a>
+        </div>
+        <div ng-view></div>
+    </body>
+</html>
