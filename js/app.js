@@ -27,5 +27,6 @@ angular
             })
     })
     .controller('layout', function ($scope, model) {
+        console.log('hint.run()');
         $scope.title = model.blog_name;
     });
