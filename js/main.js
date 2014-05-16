@@ -17,34 +17,10 @@ var blog = {
 };
 
 $(function() {
-    blog.analytics();
-    blog.configure();
-    blog.showMenu();
-    blog.bindMenu();
+    hint.run();
     blog.parseUrl();
     blog.showContent();
 });
-
-blog.configure = function() {
-    // load blog configure
-    $.ajax({
-        url: 'configure.json',
-        datatype: 'json',
-        async: false,
-        success: function(data) {
-            blog.model.apibase = data['api'] + data['username'] + '/' + data['repository'];
-
-            blog.model.blog_name = data['blog'];
-            blog.model.footer = data['footer'];
-            blog.model.contact_me = data['contact_me'];
-
-            blog.model.timeout = data['timeout'];
-            blog.model.page_limits = data['page_limits'];
-            blog.model.slide_time = data['slide_time'];
-        }
-    });
-    hint.run();
-}
 
 blog.parseUrl = function() {
     // parse url for getting key-value
@@ -60,29 +36,6 @@ blog.parseUrl = function() {
             blog.model.get[pair[0]] = pair[1];
         }
     }
-}
-
-blog.showMenu = function() {
-    // set blog name for title and header
-    $('title').html(blog.model.blog_name);
-    $('#header').append($('<h1>').text(blog.model.blog_name));
-
-    // append information to menu bar
-    $('<a id="changesets" href="javascript:void(0);">').text('Changesets').appendTo($('#menu'));
-    $('<a id="sources" href="javascript:void(0);">').text('Sources').appendTo($('#menu'));
-
-    // append footer to footer div
-    $('#footer').html(blog.model.footer);
-}
-
-blog.bindMenu = function() {
-    // bind click action for menu
-    $('#changesets').click(function() {
-        changesets.openList('tip');
-    });
-    $('#sources').click(function() {
-        sources.open('tip');
-    });
 }
 
 blog.showContent = function() {
@@ -108,15 +61,4 @@ blog.get = function(key, shortkey) {
     } else {
         return undefined;
     }
-}
-
-blog.analytics = function() {
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-32455520-1']);
-    _gaq.push(['_trackPageview']);
-    (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
 }

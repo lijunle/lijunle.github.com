@@ -1,11 +1,11 @@
 'use strict';
 
 angular
-    .module('app', ['ngRoute', 'blogControllers'])
+    .module('app', ['ngRoute', 'blogControllers', 'blogConfig'])
     .config(function ($routeProvider) {
         $routeProvider
             .when('/changeset', {
-                templateUrl: 'views/changeset-list.html',
+                templateUrl: 'views/changeset.html',
                 controller: 'ChangesetCtrl'
             })
             .when('/source', {
@@ -16,6 +16,6 @@ angular
                 redirectTo: '/changeset'
             })
     })
-    .controller('layout', function ($scope) {
-        $scope.title = 'LiJunLe ACM Code';
+    .controller('layout', function ($scope, model) {
+        $scope.title = model.blog_name;
     });
