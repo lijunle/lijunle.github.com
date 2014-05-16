@@ -4,8 +4,12 @@ angular
     .module('app', ['ngRoute', 'blogControllers', 'blogConfig'])
     .config(function ($routeProvider) {
         $routeProvider
-            .when('/changeset', {
-                templateUrl: 'views/changeset.html',
+            .when('/changeset/page-:pageId', {
+                templateUrl: 'views/changeset-list.html',
+                controller: 'ChangesetCtrl'
+            })
+            .when('/changeset/id-:pageId', {
+                templateUrl: 'views/changeset-details.html',
                 controller: 'ChangesetCtrl'
             })
             .when('/source', {
@@ -13,7 +17,7 @@ angular
                 controller: 'SourceCtl'
             })
             .otherwise({
-                redirectTo: '/changeset'
+                redirectTo: '/changeset/page-1'
             })
     })
     .controller('layout', function ($scope, model) {
