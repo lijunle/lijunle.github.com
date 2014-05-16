@@ -1,2 +1,11 @@
-_site
+# Jekyll generated site folder
+_site/
+
+# Bower components
 assets/
+
+# Visual Studio files
+*.sln
+*.suo
+*.njsproj
+obj/
