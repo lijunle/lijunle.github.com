@@ -2,12 +2,16 @@
 
 angular
     .module('blogControllers', [])
-    .controller('ChangesetCtrl', function ($scope, $routeParams) {
+    .controller('ChangesetListCtrl', function ($scope, $routeParams) {
         console.log('changesets.openList(tip)');
         $scope.currentPageId = $routeParams.pageId;
         $scope.changesetList = [];
     })
-    .controller('SourceCtl', function ($scope) {
+    .controller('ChangesetDetailCtrl', function ($scope, $routeParams) {
+        $scope.changesetId = $routeParams.changesetId;
+    })
+    .controller('SourceCtl', function ($scope, $routeParams) {
         console.log('sources.open(tip)');
         $scope.todo = 'TODO...';
+        $scope.filepath = $routeParams.filepath;
     });

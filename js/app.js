@@ -4,20 +4,26 @@ angular
     .module('app', ['ngRoute', 'blogControllers', 'blogConfig'])
     .config(function ($routeProvider) {
         $routeProvider
-            .when('/changeset/page-:pageId', {
-                templateUrl: 'views/changeset-list.html',
-                controller: 'ChangesetCtrl'
+            .when('/changeset', {
+                redirectTo: '/changeset=page1'
             })
-            .when('/changeset/id-:pageId', {
-                templateUrl: 'views/changeset-details.html',
-                controller: 'ChangesetCtrl'
+            .when('/changeset=page:pageId', {
+                templateUrl: 'views/changeset-list.html',
+                controller: 'ChangesetListCtrl'
+            })
+            .when('/changeset=:changesetId', {
+                templateUrl: 'views/changeset-detail.html',
+                controller: 'ChangesetDetailCtrl'
             })
             .when('/source', {
+                redirectTo: '/source=/'
+            })
+            .when('/source=:filepath*', {
                 templateUrl: 'views/source.html',
                 controller: 'SourceCtl'
             })
             .otherwise({
-                redirectTo: '/changeset/page-1'
+                redirectTo: '/changeset'
             })
     })
     .controller('layout', function ($scope, model) {
