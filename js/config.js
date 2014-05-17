@@ -2,7 +2,7 @@
 
 angular
     .module('blogConfig', [])
-    .value('model', {
+    .value('config', {
         apibase: 'https://api.bitbucket.org/1.0/repositories/lijunle/acm',
         blog_name: 'LiJunLe ACM Code',
         timeout: 15000,

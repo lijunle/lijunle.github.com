@@ -26,7 +26,7 @@ angular
                 redirectTo: '/changeset'
             })
     })
-    .controller('layout', function ($scope, model) {
+    .controller('layout', function ($scope, config) {
         console.log('hint.run()');
-        $scope.title = model.blog_name;
+        $scope.title = config.blog_name;
     });
