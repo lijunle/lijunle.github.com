@@ -2,7 +2,7 @@
 
 angular
     .module('blogModels', ['blogConfig'])
-    .factory('changeset', function (config) {
+    .factory('changeset', function (config, $http) {
 
         // TODO Junle: convert the following legacy class to angular factory
         var changesets = {
@@ -116,38 +116,43 @@ angular
             }
         }
 
-        changesets.getList = function (start, limit, callback) {
-            changesets.jsonp(start, limit, function (data) {
-                changesets.model.count = data.count;
-                $(data.changesets).each(function () {
-                    this.node = this.node.toUpperCase();
-                    var tmp = changesets.filterMessage(this.message);
-                    if (tmp.length == 1) {
-                        this.title = this.node;
-                        this.content = tmp[0];
-                    } else {
-                        this.title = tmp[0];
-                        this.content = $(tmp[1]).html();
-                    }
-                    changesets.model.hex[this.node] = this.revision;
-                    changesets.model.list[this.revision] = {
-                        'revision': this.revision,
-                        'node': this.node,
-                        'title': this.title,
-                        'timestamp': this.timestamp,
-                        'content': this.content,
-                        'files': this.files
-                    };
+        changesets.getList = function (start, limit) {
+            limit = limit || config.page_limit;
+
+            var result = [];
+            changesets
+                .jsonp(start, limit)
+                .then(function (data) {
+                    console.log(data);
+                    //changesets.model.count = data.count;
+                    data.changesets.each(function () {
+                        this.node = this.node.toUpperCase();
+                        var tmp = changesets.filterMessage(this.message);
+                        if (tmp.length == 1) {
+                            this.title = this.node;
+                            this.content = tmp[0];
+                        } else {
+                            this.title = tmp[0];
+                            this.content = $(tmp[1]).html();
+                        }
+                        changesets.model.hex[this.node] = this.revision;
+                        changesets.model.list[this.revision] = {
+                            'revision': this.revision,
+                            'node': this.node,
+                            'title': this.title,
+                            'timestamp': this.timestamp,
+                            'content': this.content,
+                            'files': this.files
+                        };
+                    });
                 });
-                callback(start);
-            });
+
+            return result;
         }
 
-        changesets.jsonp = function (start, limit, callback) { // model, fetch data
-            blog.model.jsonp = $.jsonp({
-                url: blog.model.apibase + '/changesets',
-                data: { 'start': start, 'limit': limit },
-                success: callback
+        changesets.jsonp = function (start, limit) { // model, fetch data
+            return $http.get(config.apibase + '/changesets', {
+                data: { 'start': start, 'limit': limit }
             });
         }
 

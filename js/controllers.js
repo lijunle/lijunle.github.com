@@ -1,12 +1,12 @@
 'use strict';
 
 angular
-    .module('blogControllers', [])
-    .controller('ChangesetListCtrl', function ($scope, $routeParams) {
+    .module('blogControllers', ['blogModels'])
+    .controller('ChangesetListCtrl', function ($scope, $routeParams, changeset) {
         console.log('changesets.openList(tip)');
         console.log('changesets.turnToPage(pageId)');
         $scope.currentPageId = $routeParams.pageId;
-        $scope.changesetList = [];
+        $scope.changesetList = changset.getList('tip');
     })
     .controller('ChangesetDetailCtrl', function ($scope, $routeParams) {
         console.log('changesets.openChangeset(changesetId)');
