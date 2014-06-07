@@ -1,3 +1,4 @@
+/*global angular*/
 'use strict';
 
 angular
@@ -7,7 +8,7 @@ angular
         // TODO Junle: convert the following legacy class to angular factory
         var changesets = {
             'model': {
-                /* 
+                /*
                  * count:   the total number of changesets in the repostory
                  *
                  * list:    the list of changesets
@@ -346,7 +347,7 @@ angular
             });
         }
 
-        changesets.filterMessage = function (message) { // changesets contorller 
+        changesets.filterMessage = function (message) { // changesets contorller
             // judge message is markdown syntax or not, return array of title and content
             if (changesets.converter == null) {
                 changesets.converter = new Markdown.Converter();
